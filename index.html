@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ระบบบันทึกวันลา</title>
+<title>ระบบบันทึกวันลา/มาสาย</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -160,6 +160,24 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 .hdate{font-size:20px;font-weight:800;color:var(--accent);min-width:36px}
 .hinfo .hmo{font-size:11px;color:var(--text3);text-transform:uppercase}
 .hinfo .hn{font-size:13px;font-weight:500}
+/* TARDINESS */
+.tardy-tab{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.ttypebtn{padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s;font-family:'Sarabun',sans-serif}
+.ttypebtn.late{background:#fde8c8;color:#8a5a1a}
+.ttypebtn.request{background:#e8f0fe;color:#1a4a8a}
+.ttypebtn.active{border-color:currentColor;transform:scale(.97)}
+.ldot.late{background:#fde8c8;color:#8a5a1a}
+.ldot.request{background:#e8f0fe;color:#1a4a8a}
+.fchip.late{background:#fde8c8;color:#8a5a1a}
+.fchip.request{background:#e8f0fe;color:#1a4a8a}
+.scard.late .cval{color:#8a5a1a}
+.scard.request .cval{color:#1a4a8a}
+.badge.late{background:#fde8c8;color:#8a5a1a}
+.badge.request{background:#e8f0fe;color:#1a4a8a}
+.time-input{display:flex;align-items:center;gap:8px}
+.time-input input{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);outline:none;width:130px}
+.time-input input:focus{border-color:var(--accent)}
+
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:12px;font-size:13px;z-index:300;transform:translateY(80px);transition:transform .3s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
@@ -183,18 +201,19 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   <div class="lcard">
     <div class="llogo">📅</div>
     <h1>ระบบบันทึกวันลา</h1>
-    <p>ปฏิทินวันลาออนไลน์สำหรับหน่วยงาน</p>
-    <div class="fg"><label>ชื่อผู้ใช้</label><input type="text" id="lu" value="Admin" placeholder="ชื่อ..."></div>
-    <div class="fg"><label>รหัสผ่าน</label><input type="password" id="lp" value="1234" placeholder="••••••"></div>
-    <div class="fg">
-      <label>เข้าระบบในฐานะ</label>
-      <select id="lr">
-        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
-        <option value="staff">เจ้าหน้าที่</option>
-      </select>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:6px">กลุ่มงานเภสัชกรรม</p>
+    <p style="color:var(--text3);font-size:12px;margin-bottom:28px">โรงพยาบาลสกลนคร</p>
+    <div class="fg"><label>ชื่อผู้ใช้ (Username)</label><input type="text" id="lu" placeholder="กรอก username..." autocomplete="username"></div>
+    <div class="fg" style="position:relative">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="lp" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
+    <div id="loginErr" style="color:#c4544a;font-size:12px;margin:-8px 0 12px;display:none">⚠️ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
     <button class="btnP" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <div style="margin-top:16px;font-size:11px;color:var(--text3)">ทดสอบ: Admin/1234 (admin) หรือเลือกเจ้าหน้าที่</div>
+    <div style="margin-top:16px;font-size:11px;color:var(--text3)">
+      Admin: <b>admin</b> / <b>จพ.กรรชิตา ฉิมมาวัน</b><br>
+      เจ้าหน้าที่: username ภาษาอังกฤษ / รหัส <b>1234</b>
+    </div>
   </div>
 </div>
 
@@ -206,7 +225,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       <div><div class="ttitle">ระบบบันทึกวันลา</div><div class="tsub" id="tsub">หน่วยงาน</div></div>
     </div>
     <div class="tr">
-      <div class="fbadge" id="fbadge">ปีงบ 2568</div>
+      <div class="fbadge" id="fbadge">ปีงบ 2569</div>
       <div class="ubadge" onclick="doLogout()">
         <div class="uav" id="uav" style="background:var(--accent)">A</div>
         <span id="unm">Admin</span>
@@ -219,7 +238,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     <div class="ntab active" onclick="sw('calendar',this)">📆 ปฏิทิน</div>
     <div class="ntab" onclick="sw('myLeave',this)">📋 วันลาของฉัน</div>
     <div class="ntab" onclick="sw('staff',this)" id="tabStaff">👥 บุคลากร</div>
+    <div class="ntab" onclick="sw('users',this)" id="tabUsers">🔑 บัญชีผู้ใช้</div>
     <div class="ntab" onclick="sw('report',this)" id="tabReport">📊 รายงาน</div>
+    <div class="ntab" onclick="sw('tardy',this)" id="tabTardy">⏰ มาสาย</div>
     <div class="ntab" onclick="sw('holidays',this)">🎌 วันหยุดราชการ</div>
   </div>
 
@@ -236,6 +257,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
           <div class="fchip annual on" id="fc-annual" onclick="togF('annual',this)">🌸 ลาพักผ่อน</div>
           <div class="fchip personal on" id="fc-personal" onclick="togF('personal',this)">🍃 ลากิจ</div>
           <div class="fchip sick on" id="fc-sick" onclick="togF('sick',this)">💙 ลาป่วย</div>
+          <div class="fchip late on" id="fc-late" onclick="togF('late',this)">⏰ มาสาย</div>
         </div>
       </div>
       <div class="calgrid">
@@ -278,6 +300,21 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       <div id="sgrid" class="sgrid"></div>
     </div>
 
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="phdr">
+        <h2>จัดการบัญชีผู้ใช้</h2>
+        <button class="btnAdd" onclick="openUserModal()">+ เพิ่มบัญชี</button>
+      </div>
+      <div class="ltable">
+        <table>
+          <thead><tr><th>#</th><th>ชื่อ-สกุล</th><th>Username</th><th>รหัสผ่าน</th><th>สิทธิ์</th><th>ผูกกับ</th><th></th></tr></thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- REPORT -->
     <div class="page" id="page-report">
       <div class="phdr">
@@ -291,6 +328,27 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
         <select class="sel" id="rFY" onchange="renderReport()" style="min-width:150px"></select>
       </div>
       <div id="rContent"></div>
+    </div>
+
+
+    <!-- TARDY -->
+    <div class="page" id="page-tardy">
+      <div class="phdr">
+        <h2>⏰ สถิติมาสาย</h2>
+        <button class="btnAdd" id="btnAddTardy" onclick="openTardyModal()">+ บันทึกมาสาย</button>
+      </div>
+      <div class="scards" id="tardyCards"></div>
+      <div class="tardy-tab">
+        <button class="ttypebtn late active" id="tfilter-late" onclick="setTardyFilter('late',this)">⏰ มาสาย</button>
+        <button class="ttypebtn" id="tfilter-all" onclick="setTardyFilter('all',this)" style="background:var(--surface2);color:var(--text2)">📋 ทั้งหมด</button>
+        <select class="sel" id="tardyFY" onchange="renderTardyPage()" style="min-width:140px"></select>
+      </div>
+      <div class="ltable">
+        <table>
+          <thead><tr><th>ชื่อ</th><th>วันที่</th><th>เวลามาถึง</th><th>สายกี่นาที</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <tbody id="tardyTable"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- HOLIDAYS -->
@@ -371,6 +429,74 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+
+<!-- TARDY MODAL -->
+<div class="moverlay" id="tardyModal">
+  <div class="modal" style="max-width:420px">
+    <button class="mclose" onclick="closeM('tardyModal')">&#10005;</button>
+    <h2>⏰ บันทึกมาสาย</h2>
+    <div style="margin-bottom:18px;font-size:13px;color:var(--text2)">Admin บันทึกสถิติการมาสายของบุคลากร</div>
+    <div class="fg">
+      <label>บุคลากร</label>
+      <select class="sel" id="tStaffSel" style="width:100%"></select>
+    </div>
+    <div class="drrow">
+      <div class="fg"><label>วันที่</label><input type="date" id="tDate"></div>
+      <div class="fg">
+        <label>เวลาที่มาถึง</label>
+        <input type="time" id="tTime" value="08:30" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);outline:none;width:100%">
+      </div>
+    </div>
+    <div class="fg"><label>หมายเหตุ / เหตุผล</label><input type="text" id="tReason" placeholder="ระบุเหตุผล (ถ้ามี)"></div>
+    <div class="btnrow">
+      <button class="btnC" onclick="closeM('tardyModal')">ยกเลิก</button>
+      <button class="btnS" onclick="submitTardy()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- USER MODAL -->
+<div class="moverlay" id="userModal">
+  <div class="modal">
+    <button class="mclose" onclick="closeM('userModal')">&#10005;</button>
+    <h2 id="umTitle">เพิ่มบัญชีผู้ใช้</h2>
+    <div style="margin-bottom:18px"></div>
+    <div class="fg"><label>ชื่อ-สกุล</label><input type="text" id="umName" placeholder="ชื่อผู้ใช้งาน"></div>
+    <div class="fg"><label>Username</label><input type="text" id="umUser" placeholder="ภาษาอังกฤษ ไม่มีเว้นวรรค"></div>
+    <div class="fg"><label>รหัสผ่าน</label><input type="text" id="umPass" placeholder="ตั้งรหัสผ่าน"></div>
+    <div class="fg">
+      <label>สิทธิ์</label>
+      <select class="sel" id="umRole" style="width:100%" onchange="toggleStaffLink()">
+        <option value="staff">เจ้าหน้าที่ (Staff)</option>
+        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+      </select>
+    </div>
+    <div class="fg" id="umStaffGrp">
+      <label>ผูกกับบุคลากร</label>
+      <select class="sel" id="umStaff" style="width:100%"></select>
+    </div>
+    <div class="btnrow">
+      <button class="btnC" onclick="closeM('userModal')">ยกเลิก</button>
+      <button class="btnS" onclick="saveUser()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="moverlay" id="chgPwModal">
+  <div class="modal" style="max-width:380px">
+    <button class="mclose" onclick="closeM('chgPwModal')">&#10005;</button>
+    <h2>เปลี่ยนรหัสผ่าน</h2>
+    <div style="margin-bottom:18px;font-size:13px;color:var(--text2)" id="chgPwName"></div>
+    <div class="fg"><label>รหัสผ่านใหม่</label><input type="text" id="chgPwNew" placeholder="กรอกรหัสผ่านใหม่"></div>
+    <div class="btnrow">
+      <button class="btnC" onclick="closeM('chgPwModal')">ยกเลิก</button>
+      <button class="btnS" onclick="confirmChgPw()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -406,20 +532,80 @@ const LTYPES = {
 
 // ===== STATE =====
 let CU=null,CRole='staff',CMo=new Date().getMonth(),CYr=new Date().getFullYear();
-let AFilters=new Set(['annual','personal','sick']),SelLT=null,EditSId=null,currentDetailId=null;
+let AFilters=new Set(['annual','personal','sick','late']),SelLT=null,EditSId=null,currentDetailId=null;
+let TardyFilter='all';
 let staffList=JSON.parse(localStorage.getItem('lc_s')||'[]');
+let tardyList=JSON.parse(localStorage.getItem('lc_t')||'[]');
 let leaves=JSON.parse(localStorage.getItem('lc_l')||'[]');
 
 if(!staffList.length){
   staffList=[
-    {id:'s1',name:'นางสาวสมใจ ใจดี',pos:'เภสัชกรชำนาญการ',annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s2',name:'นายวิชาญ มั่นคง',pos:'นักวิชาการสาธารณสุข',annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s3',name:'นางรัตนา สวัสดี',pos:'พยาบาลวิชาชีพ',annual:10,personal:3,sick:30,annualCarry:'no',personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s1', name:'น.ส.ภัทรานี คำภูแสน',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s2', name:'น.ส.จิตราภรณ์ คงดี',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s3', name:'น.ส.ชานิดา จันฤาไชย',       pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s4', name:'น.ส.สมฤทัย บุญญาวรรณ',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s5', name:'นายภุชงค์ เพ็ชรศักดิ์',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s6', name:'นายธนวัฒน์ สุริยนต์',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s7', name:'นายสถาพร กองธรรม',           pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s8', name:'น.ส.พชรนันต์ ชุมปัญญา',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s9', name:'นายจารุวิชญ์ จันทร์นามวงค์', pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s10',name:'นายกันตวิชญ์ เมืองแสน',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s11',name:'นายประกฤษฏิ์ นิลผาย',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s12',name:'นางณัชชา หาระมี',             pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s13',name:'นางนิยะดา อินทะมาศ',          pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s14',name:'น.ส.พิชญาภา ลือแสน',         pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s15',name:'นายกิตินัทธ์ ชาเหลา',         pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s16',name:'น.ส.กรรชิตา ฉิมมาวัน',        pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s17',name:'น.ส.ประภัสสร งิ้วไชยราช',     pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s18',name:'น.ส.เยาวเรศ จิตอาคนารัตน์',   pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s19',name:'นายวราเมศน์ กิจเจริญ',         pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s20',name:'น.ส.จุฑามาศ ศรีประทุม',        pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s21',name:'นางสุรินดา ราชโยธา',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s22',name:'นายธีรยุทธ ม่วงลอด',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s23',name:'นายทรงศักดิ์ แก้วดี',          pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
   ];
   save();
 }
 
-function save(){localStorage.setItem('lc_s',JSON.stringify(staffList));localStorage.setItem('lc_l',JSON.stringify(leaves))}
+
+// ===== USERS / ACCOUNTS =====
+let userAccounts = JSON.parse(localStorage.getItem('lc_users') || '[]');
+
+const DEFAULT_USERS = [
+  {id:'u0', username:'admin',    password:'Pharm1234', role:'admin',   staffId:null,  name:'ผู้ดูแลระบบ'},
+  {id:'u1', username:'pattaranee',password:'1234', role:'staff',  staffId:'s1',  name:'น.ส.ภัทรานี คำภูแสน'},
+  {id:'u2', username:'jitraporn', password:'1234', role:'staff',  staffId:'s2',  name:'น.ส.จิตราภรณ์ คงดี'},
+  {id:'u3', username:'chanida',   password:'1234', role:'staff',  staffId:'s3',  name:'น.ส.ชานิดา จันฤาไชย'},
+  {id:'u4', username:'somruethai',password:'1234', role:'staff',  staffId:'s4',  name:'น.ส.สมฤทัย บุญญาวรรณ'},
+  {id:'u5', username:'phuchong',  password:'1234', role:'staff',  staffId:'s5',  name:'นายภุชงค์ เพ็ชรศักดิ์'},
+  {id:'u6', username:'thanawat',  password:'1234', role:'staff',  staffId:'s6',  name:'นายธนวัฒน์ สุริยนต์'},
+  {id:'u7', username:'sathaporn', password:'1234', role:'staff',  staffId:'s7',  name:'นายสถาพร กองธรรม'},
+  {id:'u8', username:'phachranun',password:'1234', role:'staff',  staffId:'s8',  name:'น.ส.พชรนันต์ ชุมปัญญา'},
+  {id:'u9', username:'jaruwit',   password:'1234', role:'staff',  staffId:'s9',  name:'นายจารุวิชญ์ จันทร์นามวงค์'},
+  {id:'u10',username:'kantawit',  password:'1234', role:'staff',  staffId:'s10', name:'นายกันตวิชญ์ เมืองแสน'},
+  {id:'u11',username:'prakrit',   password:'1234', role:'staff',  staffId:'s11', name:'นายประกฤษฏิ์ นิลผาย'},
+  {id:'u12',username:'natcha',    password:'1234', role:'staff',  staffId:'s12', name:'นางณัชชา หาระมี'},
+  {id:'u13',username:'niyada',    password:'1234', role:'staff',  staffId:'s13', name:'นางนิยะดา อินทะมาศ'},
+  {id:'u14',username:'pichyapha', password:'1234', role:'staff',  staffId:'s14', name:'น.ส.พิชญาภา ลือแสน'},
+  {id:'u15',username:'kitinat',   password:'1234', role:'staff',  staffId:'s15', name:'นายกิตินัทธ์ ชาเหลา'},
+  {id:'u16',username:'kanchita',  password:'1234', role:'staff',  staffId:'s16', name:'น.ส.กรรชิตา ฉิมมาวัน'},
+  {id:'u17',username:'prapatsorn',password:'1234', role:'staff',  staffId:'s17', name:'น.ส.ประภัสสร งิ้วไชยราช'},
+  {id:'u18',username:'yaowaret',  password:'1234', role:'staff',  staffId:'s18', name:'น.ส.เยาวเรศ จิตอาคนารัตน์'},
+  {id:'u19',username:'waramet',   password:'1234', role:'staff',  staffId:'s19', name:'นายวราเมศน์ กิจเจริญ'},
+  {id:'u20',username:'jutamas',   password:'1234', role:'staff',  staffId:'s20', name:'น.ส.จุฑามาศ ศรีประทุม'},
+  {id:'u21',username:'surinda',   password:'1234', role:'staff',  staffId:'s21', name:'นางสุรินดา ราชโยธา'},
+  {id:'u22',username:'teerayut',  password:'1234', role:'staff',  staffId:'s22', name:'นายธีรยุทธ ม่วงลอด'},
+  {id:'u23',username:'songsak',   password:'1234', role:'staff',  staffId:'s23', name:'นายทรงศักดิ์ แก้วดี'},
+];
+
+if(!userAccounts.length){
+  userAccounts = DEFAULT_USERS;
+  localStorage.setItem('lc_users', JSON.stringify(userAccounts));
+}
+
+function saveUsers(){ localStorage.setItem('lc_users', JSON.stringify(userAccounts)); }
+
+function save(){localStorage.setItem('lc_s',JSON.stringify(staffList));localStorage.setItem('lc_l',JSON.stringify(leaves));localStorage.setItem('lc_t',JSON.stringify(tardyList))}
 
 // ===== UTILS =====
 function getHol(ds){return HOLS.find(h=>h.d===ds)}
@@ -435,24 +621,50 @@ function getStaffLeaves(sid,fy){const{s,e}=fyRange(fy);return leaves.filter(l=>l
 
 // ===== LOGIN =====
 function doLogin(){
-  const name=(document.getElementById('lu').value.trim()||'Admin');
-  const role=document.getElementById('lr').value;
-  CRole=role;
-  if(role==='admin'){CU={id:'admin',name,role:'admin'}}
-  else{if(!staffList.length){toast('กรุณาเพิ่มบุคลากรก่อน');return}CU={...staffList[0],role:'staff'}}
+  const uname = document.getElementById('lu').value.trim();
+  const pass   = document.getElementById('lp').value;
+  const errEl  = document.getElementById('loginErr');
+  errEl.style.display='none';
+
+  const account = userAccounts.find(u => u.username === uname && u.password === pass);
+  if(!account){ errEl.style.display='block'; return; }
+
+  CRole = account.role;
+  if(account.role === 'admin'){
+    CU = {id:'admin', name:account.name, role:'admin'};
+  } else {
+    const st = staffList.find(s => s.id === account.staffId);
+    if(!st){ errEl.style.display='block'; return; }
+    CU = {...st, role:'staff'};
+  }
+
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
-  document.getElementById('unm').textContent=CU.name.split(' ')[0]||CU.name;
-  document.getElementById('uav').textContent=CU.name[0]||'U';
-  document.getElementById('uav').style.background=avColor(CU.name);
-  document.getElementById('fbadge').textContent=`ปีงบ ${getCFY()}`;
-  if(role!=='admin'){
-    document.getElementById('tabStaff').style.display='none';
-    document.getElementById('tabReport').style.display='none';
+  document.getElementById('unm').textContent = CU.name.length > 12 ? CU.name.slice(0,12)+'…' : CU.name;
+  document.getElementById('uav').textContent  = CU.name[0]||'U';
+  document.getElementById('uav').style.background = avColor(CU.name);
+  document.getElementById('fbadge').textContent = `ปีงบ ${getCFY()}`;
+
+  if(CRole !== 'admin'){
+    document.getElementById('tabStaff').style.display = 'none';
+    document.getElementById('tabReport').style.display = 'none';
+    document.getElementById('tabUsers').style.display = 'none';
+  } else {
+    document.getElementById('tabStaff').style.display = '';
+    document.getElementById('tabReport').style.display = '';
+    document.getElementById('tabUsers').style.display = '';
   }
-  renderCal();renderMySummary();renderMyTable();renderSGrid();
+  document.getElementById('tabTardy').style.display = '';
+  renderCal(); renderMySummary(); renderMyTable(); renderSGrid();
 }
-function doLogout(){CU=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none'}
+function doLogout(){
+  CU=null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('loginErr').style.display='none';
+}
 
 // ===== TABS =====
 function sw(tab,el){
@@ -463,6 +675,8 @@ function sw(tab,el){
   if(tab==='myLeave'){renderMySummary();renderMyTable()}
   if(tab==='staff')renderSGrid();
   if(tab==='report'){popRFilters();renderReport()}
+  if(tab==='tardy'){renderTardyPage()}
+  if(tab==='users'){renderUsersTable()}
   if(tab==='holidays'){popHYears();renderHols()}
 }
 
@@ -507,6 +721,14 @@ function renderCal(){
           const nm=CRole==='admin'?(st.name.length>6?st.name.slice(0,6)+'..':st.name):t.lbl;
           inn+=`<div class="ldot ${t.cls}">${t.ico} ${nm}</div>`;
         }
+      // Tardy dots
+      if(AFilters.has('late')||AFilters.has('request')){
+        const td2=tardyList.filter(t=>t.staffId===sid&&t.date===ds&&AFilters.has(t.type));
+        for(const tv of td2){
+          const nm=CRole==='admin'?(st.name.length>6?st.name.slice(0,6)+'..':st.name):(tv.type==='late'?'มาสาย':'ขอเข้าสาย');
+          inn+=`<div class="ldot ${tv.type}">${tv.type==='late'?'⏰':'📝'} ${nm}</div>`;
+        }
+      }
       }
     }
     html+=`<div class="${cls}" onclick="openLeaveModal('${ds}')">${inn}</div>`;
@@ -797,6 +1019,14 @@ function exportXL(){
   }
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'สรุปการลา');
+  // Add tardy sheet
+  const{s:ts,e:te}=fyRange(fy);
+  const trows=[['ชื่อ-สกุล','ตำแหน่ง','ประเภท','วันที่','เวลา','เหตุผล','สถานะ']];
+  for(const t of tardyList.filter(t=>t.date>=ts&&t.date<=te).sort((a,b)=>b.date.localeCompare(a.date))){
+    const st=staffList.find(s=>s.id===t.staffId);
+    trows.push([st?st.name:'-',st?st.pos:'-',t.type==='late'?'มาสาย':'ขอเข้าสาย',t.date,t.time+(t.timeEnd?' – '+t.timeEnd:''),t.reason||'',t.type==='late'?'-':t.status==='approved'?'อนุมัติ':t.status==='rejected'?'ไม่อนุมัติ':'รอพิจารณา']);
+  }
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(trows),'มาสาย');
   XLSX.writeFile(wb,`รายงานการลา_ปีงบ${fy}.xlsx`);
   toast('✅ ส่งออกไฟล์ Excel แล้ว');
 }
@@ -808,7 +1038,7 @@ function popHYears(){
 }
 
 function renderHols(){
-  const yr=document.getElementById('hYear')?.value||'2568';
+  const yr=document.getElementById('hYear')?.value||'2569';
   const adY=+yr-543;
   const hols=HOLS.filter(h=>h.d.startsWith(adY+'-'));
   const byM={};for(const h of hols){const m=+h.d.split('-')[1]-1;if(!byM[m])byM[m]=[];byM[m].push(h)}
@@ -823,6 +1053,209 @@ function renderHols(){
     html+=`</div>`;
   }
   document.getElementById('hContent').innerHTML=html;
+}
+
+
+// ===== TARDINESS (Admin-only recording) =====
+function calcLateMins(timeStr){
+  // work starts 08:30
+  const [h,m] = timeStr.split(':').map(Number);
+  const arrMins = h*60+m;
+  const startMins = 8*60+30;
+  return Math.max(0, arrMins - startMins);
+}
+
+function openTardyModal(ds){
+  if(CRole!=='admin'){toast('เฉพาะ Admin เท่านั้นที่บันทึกมาสายได้');return}
+  const today=ds||new Date().toISOString().slice(0,10);
+  document.getElementById('tDate').value=today;
+  document.getElementById('tTime').value='08:30';
+  document.getElementById('tReason').value='';
+  const sel=document.getElementById('tStaffSel');
+  sel.innerHTML=staffList.map(s=>`<option value="${s.id}">${s.name} (${s.pos})</option>`).join('');
+  document.getElementById('tardyModal').classList.add('open');
+}
+
+function submitTardy(){
+  const ds=document.getElementById('tDate').value;
+  const time=document.getElementById('tTime').value;
+  const reason=document.getElementById('tReason').value.trim();
+  if(!ds||!time){toast('กรุณาระบุวันที่และเวลา');return}
+  const sid=document.getElementById('tStaffSel').value;
+  const lateMins=calcLateMins(time);
+  if(lateMins===0){toast('เวลาที่กรอกไม่สายกว่า 08:30 น.');return}
+  tardyList.push({
+    id:'td'+Date.now(), staffId:sid, type:'late',
+    date:ds, time, lateMins, reason,
+    createdAt:new Date().toISOString()
+  });
+  save(); closeM('tardyModal'); renderCal(); renderTardyPage();
+  toast(`✅ บันทึกมาสาย ${lateMins} นาทีแล้ว`);
+}
+
+function setTardyFilter(f,el){
+  TardyFilter=f;
+  document.querySelectorAll('.ttypebtn[id^="tfilter"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderTardyPage();
+}
+
+function renderTardyPage(){
+  const fysel=document.getElementById('tardyFY');
+  if(fysel&&!fysel.options.length){
+    const fy=getCFY();
+    fysel.innerHTML=[fy-1,fy,fy+1].map(y=>`<option value="${y}"${y===fy?' selected':''}>${y===fy?'📌 ':''} ปีงบ ${y}</option>`).join('');
+  }
+  const fy=+(document.getElementById('tardyFY')?.value||getCFY());
+  const{s,e}=fyRange(fy);
+  const sid=CRole==='staff'?CU.id:null;
+
+  let recs=tardyList.filter(t=>t.date>=s&&t.date<=e&&(!sid||t.staffId===sid));
+  recs=recs.sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Summary cards
+  const lateCount=recs.length;
+  const totalMins=recs.reduce((acc,t)=>acc+(t.lateMins||0),0);
+  const topStaff = (() => {
+    if(!recs.length||CRole!=='admin') return '';
+    const cnt={};
+    recs.forEach(t=>{cnt[t.staffId]=(cnt[t.staffId]||0)+1});
+    const topId=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
+    const st=staffList.find(s=>s.id===topId);
+    return st?st.name.split(' ').slice(-1)[0]:'';
+  })();
+
+  document.getElementById('tardyCards').innerHTML=`
+    <div class="scard late"><div class="clbl">⏰ ครั้งที่มาสาย</div><div class="cval">${lateCount}</div><div class="csub">ครั้ง ปีงบ ${fy}</div></div>
+    <div class="scard" style="border-color:var(--border)"><div class="clbl">🕐 รวมเวลาที่สาย</div><div class="cval" style="color:#8a5a1a">${totalMins}</div><div class="csub">นาที สะสม</div></div>
+    ${CRole==='admin'&&topStaff?`<div class="scard" style="border-color:var(--border)"><div class="clbl">📊 สายบ่อยสุด</div><div class="cval" style="font-size:18px;color:#c4544a">${topStaff}</div><div class="csub">ปีงบ ${fy}</div></div>`:''}
+  `;
+
+  const tbl=document.getElementById('tardyTable');
+  if(!tbl)return;
+  if(!recs.length){
+    tbl.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">ยังไม่มีข้อมูลมาสาย</td></tr>';
+    return;
+  }
+  tbl.innerHTML=recs.map(t=>{
+    const st=staffList.find(s=>s.id===t.staffId);
+    const nm=st?st.name:'-';
+    const mins=t.lateMins||calcLateMins(t.time);
+    const minsTag=`<span style="background:#fde8c8;color:#8a5a1a;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700">${mins} นาที</span>`;
+    const delBtn=CRole==='admin'?`<button class="btnDel" onclick="delTardy('${t.id}')">ลบ</button>`:'';
+    return`<tr>
+      <td><b>${nm}</b><br><span style="font-size:11px;color:var(--text3)">${st?st.pos:''}</span></td>
+      <td>${toThai(t.date)}</td>
+      <td>${t.time} น.</td>
+      <td>${minsTag}</td>
+      <td>${t.reason||'-'}</td>
+      <td>${delBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function delTardy(id){
+  if(!confirm('ต้องการลบรายการนี้?'))return;
+  tardyList=tardyList.filter(t=>t.id!==id);save();renderCal();renderTardyPage();toast('ลบรายการแล้ว');
+}
+
+
+// ===== USER MANAGEMENT =====
+let editingUserId = null, chgPwUserId = null;
+
+function renderUsersTable(){
+  const tbl = document.getElementById('usersTable'); if(!tbl)return;
+  tbl.innerHTML = userAccounts.map((u,i) => {
+    const st = u.staffId ? staffList.find(s=>s.id===u.staffId) : null;
+    const roleTag = u.role==='admin'
+      ? '<span style="background:#fde8c8;color:#8a5a1a;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">👑 Admin</span>'
+      : '<span style="background:var(--sick);color:#3a4a8a;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">👤 Staff</span>';
+    const masked = '•'.repeat(Math.min(u.password.length,8));
+    return `<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><b>${u.name}</b></td>
+      <td><code style="background:var(--surface2);padding:2px 6px;border-radius:5px;font-size:12px">${u.username}</code></td>
+      <td>
+        <span style="font-size:12px;letter-spacing:2px">${masked}</span>
+        <button onclick="openChgPw('${u.id}')" style="margin-left:6px;padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:11px;cursor:pointer">🔑</button>
+      </td>
+      <td>${roleTag}</td>
+      <td style="font-size:12px;color:var(--text2)">${st?st.name:'-'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btnDel" style="background:var(--surface2);color:var(--text2)" onclick="editUser('${u.id}')">✏️</button>
+        <button class="btnDel" onclick="deleteUser('${u.id}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openUserModal(){
+  editingUserId=null;
+  document.getElementById('umTitle').textContent='เพิ่มบัญชีผู้ใช้';
+  ['umName','umUser','umPass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('umRole').value='staff';
+  const sel=document.getElementById('umStaff');
+  sel.innerHTML=staffList.map(s=>`<option value="${s.id}">${s.name} (${s.pos})</option>`).join('');
+  document.getElementById('umStaffGrp').style.display='block';
+  document.getElementById('userModal').classList.add('open');
+}
+
+function toggleStaffLink(){
+  document.getElementById('umStaffGrp').style.display = document.getElementById('umRole').value==='admin'?'none':'block';
+}
+
+function editUser(id){
+  const u=userAccounts.find(x=>x.id===id); if(!u)return;
+  editingUserId=id;
+  document.getElementById('umTitle').textContent='แก้ไขบัญชีผู้ใช้';
+  document.getElementById('umName').value=u.name;
+  document.getElementById('umUser').value=u.username;
+  document.getElementById('umPass').value=u.password;
+  document.getElementById('umRole').value=u.role;
+  const sel=document.getElementById('umStaff');
+  sel.innerHTML=staffList.map(s=>`<option value="${s.id}"${s.id===u.staffId?' selected':''}>${s.name} (${s.pos})</option>`).join('');
+  document.getElementById('umStaffGrp').style.display=u.role==='admin'?'none':'block';
+  document.getElementById('userModal').classList.add('open');
+}
+
+function saveUser(){
+  const name=document.getElementById('umName').value.trim();
+  const uname=document.getElementById('umUser').value.trim();
+  const pass=document.getElementById('umPass').value.trim();
+  const role=document.getElementById('umRole').value;
+  const staffId=role==='staff'?document.getElementById('umStaff').value:null;
+  if(!name||!uname||!pass){toast('กรุณากรอกข้อมูลให้ครบ');return}
+  if(!editingUserId && userAccounts.find(u=>u.username===uname)){toast('Username นี้มีอยู่แล้ว');return}
+  if(editingUserId){
+    const idx=userAccounts.findIndex(u=>u.id===editingUserId);
+    if(idx>=0)userAccounts[idx]={...userAccounts[idx],name,username:uname,password:pass,role,staffId};
+  } else {
+    userAccounts.push({id:'u'+Date.now(),username:uname,password:pass,role,staffId,name});
+  }
+  saveUsers();closeM('userModal');renderUsersTable();toast('บันทึกบัญชีผู้ใช้แล้ว');
+}
+
+function deleteUser(id){
+  const u=userAccounts.find(x=>x.id===id);
+  if(u&&u.username==='admin'){toast('ไม่สามารถลบบัญชี admin หลักได้');return}
+  if(!confirm('ต้องการลบบัญชีนี้?'))return;
+  userAccounts=userAccounts.filter(u=>u.id!==id);
+  saveUsers();renderUsersTable();toast('ลบบัญชีแล้ว');
+}
+
+function openChgPw(id){
+  chgPwUserId=id;
+  const u=userAccounts.find(x=>x.id===id);
+  document.getElementById('chgPwName').textContent=u?u.name:'';
+  document.getElementById('chgPwNew').value='';
+  document.getElementById('chgPwModal').classList.add('open');
+}
+
+function confirmChgPw(){
+  const newpw=document.getElementById('chgPwNew').value.trim();
+  if(!newpw){toast('กรุณากรอกรหัสผ่านใหม่');return}
+  const idx=userAccounts.findIndex(u=>u.id===chgPwUserId);
+  if(idx>=0){userAccounts[idx].password=newpw;saveUsers();closeM('chgPwModal');toast('เปลี่ยนรหัสผ่านแล้ว');}
 }
 
 // ===== UTILS =====
