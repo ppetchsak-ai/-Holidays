@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบบันทึกวันลา</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:#f8f5f2; --surface:#ffffff; --surface2:#fef9f5; --border:#e8ddd5;
+  --text:#3d2f27; --text2:#7a6358; --text3:#b09080;
+  --accent:#e8a598; --accent2:#a8c5b8; --accent3:#b8a8d8; --accent4:#f0c878;
+  --annual:#fcd5ce; --personal:#d5e8d8; --sick:#d5d8f0;
+  --r:14px; --sh:0 2px 16px rgba(61,47,39,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#fef0ec 0%,#edf5f0 50%,#ece8f5 100%)}
+.lcard{background:white;border-radius:24px;padding:48px 40px;width:360px;box-shadow:0 8px 40px rgba(61,47,39,0.12);text-align:center}
+.llogo{width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent3));border-radius:20px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.lcard h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.lcard p{color:var(--text2);font-size:13px;margin-bottom:28px}
+.fg{text-align:left;margin-bottom:16px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.fg input,.fg select,.sel{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;background:white}
+.fg input:focus,.fg select:focus,.sel:focus{border-color:var(--accent)}
+.btnP{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#d4847a);color:white;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btnP:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,165,152,.4)}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.tl{display:flex;align-items:center;gap:12px}
+.tlogo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent3));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.ttitle{font-size:16px;font-weight:700}
+.tsub{font-size:12px;color:var(--text3)}
+.tr{display:flex;align-items:center;gap:12px}
+.fbadge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--text2)}
+.ubadge{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer}
+.uav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white}
+.navtabs{background:white;border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px;overflow-x:auto}
+.ntab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.ntab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.ntab:hover:not(.active){color:var(--text)}
+.content{flex:1;padding:24px;max-width:1400px;margin:0 auto;width:100%}
+.page{display:none}.page.active{display:block}
+
+/* CALENDAR */
+.cctrls{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.cnav{display:flex;align-items:center;gap:12px}
+.cnbtn{width:36px;height:36px;border:1.5px solid var(--border);border-radius:8px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.cnbtn:hover{background:var(--surface2);border-color:var(--accent)}
+.cmtitle{font-size:18px;font-weight:700;min-width:160px;text-align:center}
+.cfilters{display:flex;gap:8px;flex-wrap:wrap}
+.fchip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.fchip.annual{background:var(--annual);color:#c4544a}
+.fchip.personal{background:var(--personal);color:#3a7a50}
+.fchip.sick{background:var(--sick);color:#3a4a8a}
+.fchip.on{border-color:currentColor}
+.calgrid{background:white;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.cwdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:1px solid var(--border)}
+.cwday{padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.5px}
+.cwday.sun{color:#e07060}.cwday.sat{color:#6070b0}
+.cdays{display:grid;grid-template-columns:repeat(7,1fr)}
+.cday{min-height:88px;padding:8px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative}
+.cday:hover{background:var(--surface2)}
+.cday.om{opacity:.35}
+.cday.td .dnum{background:var(--accent);color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.cday.sun .dnum{color:#e07060}
+.cday.sat .dnum{color:#6070b0}
+.cday.hol{background:#fff8f0}
+.cday.hol .dnum{color:#e07060}
+.dnum{font-size:13px;font-weight:600;margin-bottom:4px;width:26px;text-align:center}
+.hlbl{font-size:9px;color:#e07060;background:#fde8e0;border-radius:3px;padding:1px 4px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ldot{font-size:10px;border-radius:4px;padding:1px 5px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ldot.annual{background:var(--annual);color:#c4544a}
+.ldot.personal{background:var(--personal);color:#3a7a50}
+.ldot.sick{background:var(--sick);color:#3a4a8a}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(61,47,39,.3);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200}
+.moverlay.open{display:flex}
+.modal{background:white;border-radius:20px;padding:28px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(61,47,39,.2)}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.mdate{font-size:13px;color:var(--text2);margin-bottom:24px}
+.mclose{float:right;background:var(--surface2);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px}
+.ltgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.ltbtn{padding:14px 12px;border-radius:10px;border:2px solid transparent;cursor:pointer;text-align:center;transition:all .15s;font-family:'Sarabun',sans-serif}
+.ltbtn .ti{font-size:22px;display:block;margin-bottom:4px}
+.ltbtn .tn{font-size:13px;font-weight:600}
+.ltbtn .tr2{font-size:11px;opacity:.7}
+.ltbtn.annual{background:var(--annual);color:#c4544a}
+.ltbtn.personal{background:var(--personal);color:#3a7a50}
+.ltbtn.sick{background:var(--sick);color:#3a4a8a}
+.ltbtn.sel{border-color:currentColor;transform:scale(.97)}
+.drrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.btnrow{display:flex;gap:10px}
+.btnC{flex:1;padding:11px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;cursor:pointer}
+.btnS{flex:2;padding:11px;background:linear-gradient(135deg,var(--accent),#d4847a);color:white;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s}
+.btnS:hover{transform:translateY(-1px)}
+
+/* CARDS */
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+.scard{background:white;border-radius:var(--r);padding:18px;border:1px solid var(--border);box-shadow:var(--sh)}
+.scard .clbl{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.scard .cval{font-size:28px;font-weight:700}
+.scard .csub{font-size:12px;color:var(--text2);margin-top:4px}
+.scard.annual .cval{color:#c4544a}
+.scard.personal .cval{color:#3a7a50}
+.scard.sick .cval{color:#3a4a8a}
+
+/* TABLE */
+.ltable{background:white;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.ltable table{width:100%;border-collapse:collapse}
+.ltable th{padding:12px 16px;background:var(--surface2);text-align:left;font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.ltable td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.ltable tr:last-child td{border-bottom:none}
+.ltable tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.annual{background:var(--annual);color:#c4544a}
+.badge.personal{background:var(--personal);color:#3a7a50}
+.badge.sick{background:var(--sick);color:#3a4a8a}
+.btnDel{padding:4px 10px;background:#fde8e0;color:#c4544a;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Sarabun',sans-serif}
+
+/* STAFF */
+.phdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.phdr h2{font-size:18px;font-weight:700}
+.btnAdd{padding:9px 18px;background:linear-gradient(135deg,var(--accent),#d4847a);color:white;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform .15s}
+.btnAdd:hover{transform:translateY(-1px)}
+.btnImp{padding:9px 18px;background:white;color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.stcard{background:white;border-radius:var(--r);padding:18px;border:1px solid var(--border);box-shadow:var(--sh);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.stcard:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(61,47,39,.1)}
+.stchdr{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.stav{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white}
+.stname{font-size:15px;font-weight:700}
+.stpos{font-size:12px;color:var(--text2)}
+.lbars{display:flex;flex-direction:column;gap:6px}
+.lbrow{display:flex;align-items:center;gap:8px}
+.lblbl{font-size:11px;color:var(--text2);width:60px}
+.lbtrack{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.lbfill{height:100%;border-radius:3px;transition:width .5s}
+.lbfill.annual{background:var(--accent)}
+.lbfill.personal{background:var(--accent2)}
+.lbfill.sick{background:var(--accent3)}
+.lbnum{font-size:11px;font-weight:600;color:var(--text2);min-width:40px;text-align:right}
+
+/* REPORT */
+.rctrl{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.stitle{font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.rsttitle{font-size:15px;font-weight:700;margin:24px 0 14px;color:var(--text)}
+
+/* HOLIDAYS */
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.hitem{background:white;border-radius:10px;padding:12px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.hdate{font-size:20px;font-weight:800;color:var(--accent);min-width:36px}
+.hinfo .hmo{font-size:11px;color:var(--text3);text-transform:uppercase}
+.hinfo .hn{font-size:13px;font-weight:500}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:12px;font-size:13px;z-index:300;transform:translateY(80px);transition:transform .3s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.toast.show{transform:translateY(0)}
+.empty{text-align:center;padding:48px 24px;color:var(--text2)}
+.empty .ei{font-size:48px;margin-bottom:12px}
+
+@media(max-width:600px){
+  .content{padding:16px}
+  .cday{min-height:60px;padding:4px}
+  .ldot{display:none}
+  .scards{grid-template-columns:1fr 1fr}
+  .drrow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lcard">
+    <div class="llogo">📅</div>
+    <h1>ระบบบันทึกวันลา</h1>
+    <p>ปฏิทินวันลาออนไลน์สำหรับหน่วยงาน</p>
+    <div class="fg"><label>ชื่อผู้ใช้</label><input type="text" id="lu" value="Admin" placeholder="ชื่อ..."></div>
+    <div class="fg"><label>รหัสผ่าน</label><input type="password" id="lp" value="1234" placeholder="••••••"></div>
+    <div class="fg">
+      <label>เข้าระบบในฐานะ</label>
+      <select id="lr">
+        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+        <option value="staff">เจ้าหน้าที่</option>
+      </select>
+    </div>
+    <button class="btnP" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div style="margin-top:16px;font-size:11px;color:var(--text3)">ทดสอบ: Admin/1234 (admin) หรือเลือกเจ้าหน้าที่</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tl">
+      <div class="tlogo">📅</div>
+      <div><div class="ttitle">ระบบบันทึกวันลา</div><div class="tsub" id="tsub">หน่วยงาน</div></div>
+    </div>
+    <div class="tr">
+      <div class="fbadge" id="fbadge">ปีงบ 2568</div>
+      <div class="ubadge" onclick="doLogout()">
+        <div class="uav" id="uav" style="background:var(--accent)">A</div>
+        <span id="unm">Admin</span>
+        <span style="color:var(--text3)">↩</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="navtabs" id="navtabs">
+    <div class="ntab active" onclick="sw('calendar',this)">📆 ปฏิทิน</div>
+    <div class="ntab" onclick="sw('myLeave',this)">📋 วันลาของฉัน</div>
+    <div class="ntab" onclick="sw('staff',this)" id="tabStaff">👥 บุคลากร</div>
+    <div class="ntab" onclick="sw('report',this)" id="tabReport">📊 รายงาน</div>
+    <div class="ntab" onclick="sw('holidays',this)">🎌 วันหยุดราชการ</div>
+  </div>
+
+  <div class="content">
+    <!-- CALENDAR -->
+    <div class="page active" id="page-calendar">
+      <div class="cctrls">
+        <div class="cnav">
+          <button class="cnbtn" onclick="chgMo(-1)">&#8249;</button>
+          <div class="cmtitle" id="cmtitle"></div>
+          <button class="cnbtn" onclick="chgMo(1)">&#8250;</button>
+        </div>
+        <div class="cfilters">
+          <div class="fchip annual on" id="fc-annual" onclick="togF('annual',this)">🌸 ลาพักผ่อน</div>
+          <div class="fchip personal on" id="fc-personal" onclick="togF('personal',this)">🍃 ลากิจ</div>
+          <div class="fchip sick on" id="fc-sick" onclick="togF('sick',this)">💙 ลาป่วย</div>
+        </div>
+      </div>
+      <div class="calgrid">
+        <div class="cwdays">
+          <div class="cwday sun">อา</div>
+          <div class="cwday">จ</div><div class="cwday">อ</div><div class="cwday">พ</div>
+          <div class="cwday">พฤ</div><div class="cwday">ศ</div>
+          <div class="cwday sat">ส</div>
+        </div>
+        <div class="cdays" id="cdays"></div>
+      </div>
+    </div>
+
+    <!-- MY LEAVE -->
+    <div class="page" id="page-myLeave">
+      <div class="phdr">
+        <h2>วันลาของฉัน</h2>
+        <button class="btnAdd" onclick="openLeaveModal()">+ บันทึกวันลา</button>
+      </div>
+      <div class="scards" id="mscards"></div>
+      <div class="stitle">ประวัติการลา ปีงบปัจจุบัน</div>
+      <div class="ltable">
+        <table>
+          <thead><tr><th>ประเภท</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <tbody id="mlTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="page" id="page-staff">
+      <div class="phdr">
+        <h2>จัดการบุคลากร</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btnImp" onclick="document.getElementById('xlsxIn').click()">📥 นำเข้า Excel</button>
+          <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="importXL(event)">
+          <button class="btnAdd" onclick="openStaffModal()">+ เพิ่มบุคลากร</button>
+        </div>
+      </div>
+      <div id="sgrid" class="sgrid"></div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="page" id="page-report">
+      <div class="phdr">
+        <h2>รายงานสรุปการลา</h2>
+        <button class="btnImp" onclick="exportXL()">📤 ส่งออก Excel</button>
+      </div>
+      <div class="rctrl">
+        <select class="sel" id="rStaff" onchange="renderReport()" style="min-width:200px">
+          <option value="all">👥 บุคลากรทั้งหมด</option>
+        </select>
+        <select class="sel" id="rFY" onchange="renderReport()" style="min-width:150px"></select>
+      </div>
+      <div id="rContent"></div>
+    </div>
+
+    <!-- HOLIDAYS -->
+    <div class="page" id="page-holidays">
+      <div class="phdr">
+        <h2>วันหยุดราชการ &amp; วันสำคัญ</h2>
+        <select class="sel" id="hYear" onchange="renderHols()" style="min-width:150px"></select>
+      </div>
+      <div id="hContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LEAVE MODAL -->
+<div class="moverlay" id="leaveModal">
+  <div class="modal">
+    <button class="mclose" onclick="closeM('leaveModal')">&#10005;</button>
+    <h2>บันทึกวันลา</h2>
+    <div class="mdate" id="lmDate"></div>
+    <div class="ltgrid" id="ltbtns"></div>
+    <div class="drrow">
+      <div class="fg"><label>วันที่เริ่มต้น</label><input type="date" id="lStart"></div>
+      <div class="fg"><label>วันที่สิ้นสุด</label><input type="date" id="lEnd"></div>
+    </div>
+    <div class="fg" id="lStaffGrp" style="display:none">
+      <label>บุคลากร</label>
+      <select class="sel" id="lStaffSel" style="width:100%" onchange="renderLTBtns()"></select>
+    </div>
+    <div class="fg"><label>หมายเหตุ</label><input type="text" id="lNote" placeholder="ระบุเหตุผล (ถ้ามี)"></div>
+    <div class="btnrow">
+      <button class="btnC" onclick="closeM('leaveModal')">ยกเลิก</button>
+      <button class="btnS" onclick="submitLeave()">บันทึกวันลา</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF MODAL -->
+<div class="moverlay" id="staffModal">
+  <div class="modal">
+    <button class="mclose" onclick="closeM('staffModal')">&#10005;</button>
+    <h2 id="smTitle">เพิ่มบุคลากร</h2>
+    <div style="margin-bottom:20px"></div>
+    <div class="fg"><label>ชื่อ-สกุล</label><input type="text" id="sName" placeholder="ชื่อ-นามสกุล"></div>
+    <div class="fg"><label>ตำแหน่ง</label><input type="text" id="sPos" placeholder="ตำแหน่งงาน"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>โควต้าลาพักผ่อน/ปี</label><input type="number" id="sAnn" value="10" min="0"></div>
+      <div class="fg"><label>สะสมลาพักผ่อนได้</label><select id="sAnnC"><option value="yes">ได้</option><option value="no">ไม่ได้</option></select></div>
+      <div class="fg"><label>โควต้าลากิจ/ปี</label><input type="number" id="sPer" value="3" min="0"></div>
+      <div class="fg"><label>สะสมลากิจได้</label><select id="sPerC"><option value="no">ไม่ได้</option><option value="yes">ได้</option></select></div>
+      <div class="fg"><label>โควต้าลาป่วย/ปี</label><input type="number" id="sSic" value="30" min="0"></div>
+      <div class="fg"><label>สะสมลาป่วยได้</label><select id="sSicC"><option value="no">ไม่ได้</option><option value="yes">ได้</option></select></div>
+    </div>
+    <div class="btnrow" style="margin-top:8px">
+      <button class="btnC" onclick="closeM('staffModal')">ยกเลิก</button>
+      <button class="btnS" onclick="saveStaff()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF DETAIL MODAL -->
+<div class="moverlay" id="sdModal">
+  <div class="modal" style="width:560px">
+    <button class="mclose" onclick="closeM('sdModal')">&#10005;</button>
+    <h2 id="sdName"></h2>
+    <div id="sdPos" style="color:var(--text2);font-size:13px;margin-bottom:20px"></div>
+    <div class="scards" id="sdCards" style="grid-template-columns:repeat(3,1fr)"></div>
+    <div class="stitle" style="margin-top:16px">ประวัติการลา</div>
+    <div class="ltable" style="max-height:280px;overflow-y:auto">
+      <table>
+        <thead><tr><th>ประเภท</th><th>วันที่</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+        <tbody id="sdTable"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btnAdd" onclick="editStaff(currentDetailId)">✏️ แก้ไขข้อมูล</button>
+      <button class="btnDel" style="padding:9px 14px;font-size:13px" onclick="deleteStaff(currentDetailId)">🗑️ ลบบุคลากร</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== HOLIDAYS DATA =====
+const HOLS = [
+  {d:'2025-01-01',n:'วันปีใหม่'},{d:'2025-01-13',n:'ชดเชยวันปีใหม่'},
+  {d:'2025-02-12',n:'วันตรุษจีน (พิเศษ)'},{d:'2025-02-26',n:'วันมาฆบูชา'},
+  {d:'2025-04-06',n:'วันจักรี'},{d:'2025-04-07',n:'วันหยุดพิเศษ'},
+  {d:'2025-04-13',n:'วันสงกรานต์'},{d:'2025-04-14',n:'วันสงกรานต์'},{d:'2025-04-15',n:'วันสงกรานต์'},
+  {d:'2025-05-01',n:'วันแรงงาน'},{d:'2025-05-05',n:'วันฉัตรมงคล'},{d:'2025-05-12',n:'วันพืชมงคล'},
+  {d:'2025-05-23',n:'วันวิสาขบูชา'},{d:'2025-06-03',n:'วันเฉลิมพระชนมพรรษา พระราชินี'},
+  {d:'2025-07-22',n:'วันอาสาฬหบูชา'},{d:'2025-07-23',n:'วันเข้าพรรษา'},
+  {d:'2025-07-28',n:'วันเฉลิมพระชนมพรรษา ร.10'},{d:'2025-08-12',n:'วันแม่แห่งชาติ'},
+  {d:'2025-10-13',n:'วันนวมินทรมหาราช'},{d:'2025-10-23',n:'วันปิยมหาราช'},
+  {d:'2025-12-05',n:'วันพ่อแห่งชาติ'},{d:'2025-12-10',n:'วันรัฐธรรมนูญ'},{d:'2025-12-31',n:'วันสิ้นปี'},
+  {d:'2026-01-01',n:'วันปีใหม่'},{d:'2026-04-06',n:'วันจักรี'},
+  {d:'2026-04-13',n:'วันสงกรานต์'},{d:'2026-04-14',n:'วันสงกรานต์'},{d:'2026-04-15',n:'วันสงกรานต์'},
+  {d:'2026-05-01',n:'วันแรงงาน'},{d:'2026-05-05',n:'วันฉัตรมงคล'},
+  {d:'2026-06-03',n:'วันเฉลิมพระชนมพรรษา พระราชินี'},
+  {d:'2026-07-28',n:'วันเฉลิมพระชนมพรรษา ร.10'},{d:'2026-08-12',n:'วันแม่แห่งชาติ'},
+  {d:'2026-10-13',n:'วันนวมินทรมหาราช'},{d:'2026-10-23',n:'วันปิยมหาราช'},
+  {d:'2026-12-05',n:'วันพ่อแห่งชาติ'},{d:'2026-12-10',n:'วันรัฐธรรมนูญ'},{d:'2026-12-31',n:'วันสิ้นปี'},
+];
+
+const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_SH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+const LTYPES = {
+  annual:{lbl:'ลาพักผ่อน',ico:'🌸',cls:'annual'},
+  personal:{lbl:'ลากิจ',ico:'🍃',cls:'personal'},
+  sick:{lbl:'ลาป่วย',ico:'💙',cls:'sick'},
+};
+
+// ===== STATE =====
+let CU=null,CRole='staff',CMo=new Date().getMonth(),CYr=new Date().getFullYear();
+let AFilters=new Set(['annual','personal','sick']),SelLT=null,EditSId=null,currentDetailId=null;
+let staffList=JSON.parse(localStorage.getItem('lc_s')||'[]');
+let leaves=JSON.parse(localStorage.getItem('lc_l')||'[]');
+
+if(!staffList.length){
+  staffList=[
+    {id:'s1',name:'นางสาวสมใจ ใจดี',pos:'เภสัชกรชำนาญการ',annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s2',name:'นายวิชาญ มั่นคง',pos:'นักวิชาการสาธารณสุข',annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s3',name:'นางรัตนา สวัสดี',pos:'พยาบาลวิชาชีพ',annual:10,personal:3,sick:30,annualCarry:'no',personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+  ];
+  save();
+}
+
+function save(){localStorage.setItem('lc_s',JSON.stringify(staffList));localStorage.setItem('lc_l',JSON.stringify(leaves))}
+
+// ===== UTILS =====
+function getHol(ds){return HOLS.find(h=>h.d===ds)}
+function isWD(ds){const d=new Date(ds);const dow=d.getDay();return dow!==0&&dow!==6&&!getHol(ds)}
+function countWD(s,e){let c=0;let d=new Date(s);const ed=new Date(e);while(d<=ed){if(isWD(d.toISOString().slice(0,10)))c++;d.setDate(d.getDate()+1)}return c}
+function getFY(date){const d=typeof date==='string'?new Date(date):date;return d.getMonth()>=9?d.getFullYear()+543+1:d.getFullYear()+543}
+function getCFY(){return getFY(new Date())}
+function fyRange(fy){const y=fy-543;return{s:`${y-1}-10-01`,e:`${y}-09-30`}}
+function toThai(ds){if(!ds)return'';const d=new Date(ds);return`${d.getDate()} ${MONTHS_SH[d.getMonth()]} ${d.getFullYear()+543}`}
+function avColor(name){const cols=['#e8a598','#a8c5b8','#b8a8d8','#f0c878','#a0b8d8','#d8a0b8'];let h=0;for(let c of name)h=(h+c.charCodeAt(0))%cols.length;return cols[h]}
+function getUsed(sid,type,fy){const{s,e}=fyRange(fy);return leaves.filter(l=>l.staffId===sid&&l.type===type&&l.startDate>=s&&l.startDate<=e).reduce((acc,l)=>acc+l.days,0)}
+function getStaffLeaves(sid,fy){const{s,e}=fyRange(fy);return leaves.filter(l=>l.staffId===sid&&l.startDate>=s&&l.startDate<=e)}
+
+// ===== LOGIN =====
+function doLogin(){
+  const name=(document.getElementById('lu').value.trim()||'Admin');
+  const role=document.getElementById('lr').value;
+  CRole=role;
+  if(role==='admin'){CU={id:'admin',name,role:'admin'}}
+  else{if(!staffList.length){toast('กรุณาเพิ่มบุคลากรก่อน');return}CU={...staffList[0],role:'staff'}}
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('unm').textContent=CU.name.split(' ')[0]||CU.name;
+  document.getElementById('uav').textContent=CU.name[0]||'U';
+  document.getElementById('uav').style.background=avColor(CU.name);
+  document.getElementById('fbadge').textContent=`ปีงบ ${getCFY()}`;
+  if(role!=='admin'){
+    document.getElementById('tabStaff').style.display='none';
+    document.getElementById('tabReport').style.display='none';
+  }
+  renderCal();renderMySummary();renderMyTable();renderSGrid();
+}
+function doLogout(){CU=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none'}
+
+// ===== TABS =====
+function sw(tab,el){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='myLeave'){renderMySummary();renderMyTable()}
+  if(tab==='staff')renderSGrid();
+  if(tab==='report'){popRFilters();renderReport()}
+  if(tab==='holidays'){popHYears();renderHols()}
+}
+
+// ===== CALENDAR =====
+function chgMo(d){CMo+=d;if(CMo>11){CMo=0;CYr++}if(CMo<0){CMo=11;CYr--}renderCal()}
+function togF(type,el){el.classList.toggle('on');if(AFilters.has(type))AFilters.delete(type);else AFilters.add(type);renderCal()}
+
+function renderCal(){
+  document.getElementById('cmtitle').textContent=`${MONTHS_TH[CMo]} ${CYr+543}`;
+  const fd=new Date(CYr,CMo,1).getDay();
+  const dim=new Date(CYr,CMo+1,0).getDate();
+  const pd=new Date(CYr,CMo,0).getDate();
+  const today=new Date().toISOString().slice(0,10);
+  let html='';
+  const total=Math.ceil((fd+dim)/7)*7;
+  for(let i=0;i<total;i++){
+    let day,mo,yr,om=false;
+    if(i<fd){day=pd-fd+i+1;mo=CMo-1;yr=CYr;if(mo<0){mo=11;yr--}om=true}
+    else if(i>=fd+dim){day=i-fd-dim+1;mo=CMo+1;yr=CYr;if(mo>11){mo=0;yr++}om=true}
+    else{day=i-fd+1;mo=CMo;yr=CYr}
+    const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dow=new Date(ds).getDay();
+    const hol=getHol(ds);
+    const isTd=ds===today;
+    let cls='cday';
+    if(om)cls+=' om';
+    if(isTd)cls+=' td';
+    if(dow===0)cls+=' sun';
+    if(dow===6)cls+=' sat';
+    if(hol&&!om)cls+=' hol';
+    let inn=`<div class="dnum">${day}</div>`;
+    if(hol&&!om)inn+=`<div class="hlbl">🎌 ${hol.n}</div>`;
+    if(!om){
+      const sids=CRole==='admin'?staffList.map(s=>s.id):[CU.id];
+      for(const sid of sids){
+        const st=staffList.find(s=>s.id===sid);
+        if(!st)continue;
+        const dl=leaves.filter(l=>l.staffId===sid&&l.startDate<=ds&&l.endDate>=ds&&AFilters.has(l.type));
+        for(const lv of dl){
+          const t=LTYPES[lv.type];
+          const lbl=CRole==='admin'?`${t.ico} ${st.name.split('').slice(-4).join('')}||${st.name.split(' ').pop()}`:(`${t.ico} ${t.lbl}`);
+          const nm=CRole==='admin'?(st.name.length>6?st.name.slice(0,6)+'..':st.name):t.lbl;
+          inn+=`<div class="ldot ${t.cls}">${t.ico} ${nm}</div>`;
+        }
+      }
+    }
+    html+=`<div class="${cls}" onclick="openLeaveModal('${ds}')">${inn}</div>`;
+  }
+  document.getElementById('cdays').innerHTML=html;
+}
+
+// ===== LEAVE MODAL =====
+function openLeaveModal(ds){
+  const d=ds?new Date(ds):new Date();
+  document.getElementById('lmDate').textContent=toThai(d.toISOString().slice(0,10));
+  document.getElementById('lStart').value=ds||'';
+  document.getElementById('lEnd').value=ds||'';
+  document.getElementById('lNote').value='';
+  SelLT=null;
+  const sg=document.getElementById('lStaffGrp');
+  const sel=document.getElementById('lStaffSel');
+  if(CRole==='admin'){
+    sg.style.display='block';
+    sel.innerHTML=staffList.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  } else sg.style.display='none';
+  renderLTBtns();
+  document.getElementById('leaveModal').classList.add('open');
+}
+
+function renderLTBtns(){
+  const sid=CRole==='admin'?(document.getElementById('lStaffSel').value||staffList[0]?.id):CU.id;
+  const st=staffList.find(s=>s.id===sid)||(CRole==='staff'?CU:null);
+  const fy=getCFY();
+  let html='';
+  for(const[k,v]of Object.entries(LTYPES)){
+    const used=st?getUsed(st.id,k,fy):0;
+    const quota=st?(st[k]||0):0;
+    const rem=Math.max(0,quota-used);
+    html+=`<button class="ltbtn ${v.cls}${SelLT===k?' sel':''}" onclick="selLT('${k}')">
+      <span class="ti">${v.ico}</span>
+      <span class="tn">${v.lbl}</span>
+      <span class="tr2">คงเหลือ ${rem}/${quota} วัน</span>
+    </button>`;
+  }
+  document.getElementById('ltbtns').innerHTML=html;
+}
+
+function selLT(t){SelLT=t;renderLTBtns()}
+
+function submitLeave(){
+  if(!SelLT){toast('กรุณาเลือกประเภทการลา');return}
+  const s=document.getElementById('lStart').value;
+  const e=document.getElementById('lEnd').value;
+  if(!s||!e){toast('กรุณาระบุวันที่');return}
+  if(e<s){toast('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่มต้น');return}
+  const sid=CRole==='admin'?document.getElementById('lStaffSel').value:CU.id;
+  const days=countWD(s,e);
+  if(days===0){toast('ไม่มีวันทำงานในช่วงที่เลือก');return}
+  leaves.push({id:'lv'+Date.now(),staffId:sid,type:SelLT,startDate:s,endDate:e,days,note:document.getElementById('lNote').value,createdAt:new Date().toISOString()});
+  save();closeM('leaveModal');renderCal();renderMySummary();renderMyTable();toast(`✅ บันทึกการลา ${days} วันทำงาน`);
+}
+
+// ===== MY LEAVE =====
+function renderMySummary(){
+  const sid=CRole==='staff'?CU.id:(staffList[0]?.id||'');
+  const st=staffList.find(s=>s.id===sid);
+  const fy=getCFY();
+  let html='';
+  for(const[k,v]of Object.entries(LTYPES)){
+    const quota=st?(st[k]||0):0;
+    const used=st?getUsed(sid,k,fy):0;
+    const rem=Math.max(0,quota-used);
+    const carry=st?st[k+'Carry']:'no';
+    html+=`<div class="scard ${k}">
+      <div class="clbl">${v.ico} ${v.lbl}</div>
+      <div class="cval">${rem}</div>
+      <div class="csub">ใช้ไป ${used}/${quota} วัน${carry==='yes'?' · สะสมได้':''}</div>
+    </div>`;
+  }
+  const el=document.getElementById('mscards');if(el)el.innerHTML=html;
+}
+
+function renderMyTable(){
+  const sid=CRole==='staff'?CU.id:null;
+  const fy=getCFY();const{s,e}=fyRange(fy);
+  const recs=leaves.filter(l=>(!sid||l.staffId===sid)&&l.startDate>=s&&l.startDate<=e).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  const el=document.getElementById('mlTable');if(!el)return;
+  el.innerHTML=recs.length===0
+    ?'<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
+    :recs.map(l=>{const t=LTYPES[l.type];return`<tr>
+      <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
+      <td>${toThai(l.startDate)}</td><td>${toThai(l.endDate)}</td>
+      <td><b>${l.days}</b> วัน</td><td>${l.note||'-'}</td>
+      <td><button class="btnDel" onclick="delLeave('${l.id}')">ลบ</button></td>
+    </tr>`}).join('');
+}
+
+function delLeave(id){
+  if(!confirm('ต้องการลบรายการนี้?'))return;
+  leaves=leaves.filter(l=>l.id!==id);save();renderCal();renderMySummary();renderMyTable();toast('ลบรายการแล้ว');
+}
+
+// ===== STAFF =====
+function renderSGrid(){
+  let html='';
+  for(const s of staffList){
+    const a={u:getUsed(s.id,'annual',getCFY()),q:s.annual};
+    const p={u:getUsed(s.id,'personal',getCFY()),q:s.personal};
+    const sk={u:getUsed(s.id,'sick',getCFY()),q:s.sick};
+    html+=`<div class="stcard" onclick="openSD('${s.id}')">
+      <div class="stchdr">
+        <div class="stav" style="background:${s.color||avColor(s.name)}">${s.name[0]}</div>
+        <div><div class="stname">${s.name}</div><div class="stpos">${s.pos}</div></div>
+      </div>
+      <div class="lbars">
+        ${lbar('ลาพักผ่อน',a.u,a.q,'annual')}
+        ${lbar('ลากิจ',p.u,p.q,'personal')}
+        ${lbar('ลาป่วย',sk.u,sk.q,'sick')}
+      </div>
+    </div>`;
+  }
+  if(!staffList.length)html=`<div class="empty" style="grid-column:1/-1"><div class="ei">👥</div><p>ยังไม่มีบุคลากร กรุณาเพิ่มหรือนำเข้า Excel</p></div>`;
+  document.getElementById('sgrid').innerHTML=html;
+}
+
+function lbar(lbl,u,q,cls){
+  const p=q>0?Math.min(100,u/q*100):0;
+  return`<div class="lbrow"><div class="lblbl">${lbl}</div><div class="lbtrack"><div class="lbfill ${cls}" style="width:${p}%"></div></div><div class="lbnum">${u}/${q}</div></div>`;
+}
+
+function openStaffModal(){
+  EditSId=null;
+  document.getElementById('smTitle').textContent='เพิ่มบุคลากร';
+  ['sName','sPos'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sAnn').value=10;
+  document.getElementById('sPer').value=3;
+  document.getElementById('sSic').value=30;
+  document.getElementById('staffModal').classList.add('open');
+}
+
+function editStaff(id){
+  const s=staffList.find(x=>x.id===id);if(!s)return;
+  EditSId=id;
+  document.getElementById('smTitle').textContent='แก้ไขข้อมูลบุคลากร';
+  document.getElementById('sName').value=s.name;
+  document.getElementById('sPos').value=s.pos;
+  document.getElementById('sAnn').value=s.annual;
+  document.getElementById('sPer').value=s.personal;
+  document.getElementById('sSic').value=s.sick;
+  document.getElementById('sAnnC').value=s.annualCarry||'yes';
+  document.getElementById('sPerC').value=s.personalCarry||'no';
+  document.getElementById('sSicC').value=s.sickCarry||'no';
+  closeM('sdModal');
+  document.getElementById('staffModal').classList.add('open');
+}
+
+function saveStaff(){
+  const name=document.getElementById('sName').value.trim();
+  const pos=document.getElementById('sPos').value.trim();
+  if(!name){toast('กรุณาระบุชื่อ');return}
+  const data={name,pos,annual:+document.getElementById('sAnn').value,personal:+document.getElementById('sPer').value,sick:+document.getElementById('sSic').value,annualCarry:document.getElementById('sAnnC').value,personalCarry:document.getElementById('sPerC').value,sickCarry:document.getElementById('sSicC').value,color:avColor(name)};
+  if(EditSId){const i=staffList.findIndex(s=>s.id===EditSId);if(i>=0)staffList[i]={...staffList[i],...data}}
+  else staffList.push({id:'s'+Date.now(),...data});
+  save();closeM('staffModal');renderSGrid();toast('บันทึกข้อมูลแล้ว');
+}
+
+function deleteStaff(id){
+  if(!confirm('ต้องการลบบุคลากรนี้? (ประวัติการลาจะถูกลบด้วย)'))return;
+  staffList=staffList.filter(s=>s.id!==id);
+  leaves=leaves.filter(l=>l.staffId!==id);
+  save();closeM('sdModal');renderSGrid();toast('ลบบุคลากรแล้ว');
+}
+
+function openSD(sid){
+  const s=staffList.find(x=>x.id===sid);if(!s)return;
+  currentDetailId=sid;
+  document.getElementById('sdName').textContent=s.name;
+  document.getElementById('sdPos').textContent=s.pos;
+  const fy=getCFY();
+  let ch='';
+  for(const[k,v]of Object.entries(LTYPES)){
+    const used=getUsed(s.id,k,fy);const quota=s[k]||0;const rem=Math.max(0,quota-used);
+    const carry=s[k+'Carry'];
+    ch+=`<div class="scard ${k}"><div class="clbl">${v.ico} ${v.lbl}</div><div class="cval">${rem}</div><div class="csub">ใช้ ${used}/${quota} วัน<br>${carry==='yes'?'✅ สะสมได้':'❌ ไม่สะสม'}</div></div>`;
+  }
+  document.getElementById('sdCards').innerHTML=ch;
+  const recs=getStaffLeaves(sid,fy).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  document.getElementById('sdTable').innerHTML=recs.length===0
+    ?'<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
+    :recs.map(l=>{const t=LTYPES[l.type];return`<tr>
+      <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
+      <td>${toThai(l.startDate)}${l.startDate!==l.endDate?' – '+toThai(l.endDate):''}</td>
+      <td>${l.days} วัน</td><td>${l.note||'-'}</td>
+      <td><button class="btnDel" onclick="delLeaveAdmin('${l.id}')">ลบ</button></td>
+    </tr>`}).join('');
+  document.getElementById('sdModal').classList.add('open');
+}
+
+function delLeaveAdmin(id){
+  if(!confirm('ต้องการลบรายการนี้?'))return;
+  leaves=leaves.filter(l=>l.id!==id);save();
+  openSD(currentDetailId);renderCal();toast('ลบรายการแล้ว');
+}
+
+// ===== IMPORT EXCEL =====
+function importXL(event){
+  const f=event.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=(e)=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws);
+      let cnt=0;
+      for(const row of data){
+        const name=(row['ชื่อ-สกุล']||row['ชื่อ']||row['name']||'').toString().trim();
+        if(!name)continue;
+        staffList.push({
+          id:'sx'+Date.now()+cnt,
+          name,pos:(row['ตำแหน่ง']||row['position']||'').toString(),
+          annual:+(row['โควต้าลาพักผ่อน']||row['ลาพักผ่อน']||10),
+          personal:+(row['โควต้าลากิจ']||row['ลากิจ']||3),
+          sick:+(row['โควต้าลาป่วย']||row['ลาป่วย']||30),
+          annualCarry:(row['สะสมลาพักผ่อน']||'ได้')==='ได้'?'yes':'no',
+          personalCarry:(row['สะสมลากิจ']||'ไม่ได้')==='ได้'?'yes':'no',
+          sickCarry:(row['สะสมลาป่วย']||'ไม่ได้')==='ได้'?'yes':'no',
+          color:avColor(name),
+        });cnt++;
+      }
+      save();renderSGrid();toast(`✅ นำเข้าบุคลากร ${cnt} คน`);
+    }catch(err){toast('❌ ไม่สามารถอ่านไฟล์ได้: '+err.message)}
+  };
+  r.readAsBinaryString(f);event.target.value='';
+}
+
+// ===== REPORT =====
+function popRFilters(){
+  const sel=document.getElementById('rStaff');
+  sel.innerHTML='<option value="all">👥 บุคลากรทั้งหมด</option>'+staffList.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  const fy=getCFY();
+  const fysel=document.getElementById('rFY');
+  fysel.innerHTML=[fy-1,fy,fy+1].map(y=>`<option value="${y}"${y===fy?' selected':''}>${y===fy?'📌 ':''} ปีงบ ${y}</option>`).join('');
+}
+
+function renderReport(){
+  const sf=document.getElementById('rStaff')?.value||'all';
+  const fy=+(document.getElementById('rFY')?.value||getCFY());
+  const fs=sf==='all'?staffList:staffList.filter(s=>s.id===sf);
+  let html=`<div class="ltable" style="margin-bottom:24px"><table>
+    <thead><tr>
+      <th>ชื่อ-สกุล</th><th>ตำแหน่ง</th>
+      <th>🌸 ลาพักผ่อน<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+      <th>🍃 ลากิจ<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+      <th>💙 ลาป่วย<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+      <th>รวม</th>
+    </tr></thead><tbody>`;
+  for(const s of fs){
+    const a=getUsed(s.id,'annual',fy);const p=getUsed(s.id,'personal',fy);const sk=getUsed(s.id,'sick',fy);
+    html+=`<tr>
+      <td><b>${s.name}</b></td><td>${s.pos}</td>
+      <td>${a}/${s.annual} ${s.annualCarry==='yes'?'<small style="color:var(--accent2)">สะสม</small>':''}</td>
+      <td>${p}/${s.personal}</td>
+      <td>${sk}/${s.sick}</td>
+      <td><b>${a+p+sk}</b></td>
+    </tr>`;
+  }
+  html+=`</tbody></table></div>`;
+  if(fs.length===1){
+    const s=fs[0];
+    const recs=getStaffLeaves(s.id,fy).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+    html+=`<div class="rsttitle">รายการลาทั้งหมด — ${s.name}</div>`;
+    html+=`<div class="ltable"><table>
+      <thead><tr><th>ประเภท</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>จำนวน</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>${recs.length===0
+        ?'<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">ไม่มีข้อมูล</td></tr>'
+        :recs.map(l=>{const t=LTYPES[l.type];return`<tr>
+          <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
+          <td>${toThai(l.startDate)}</td><td>${toThai(l.endDate)}</td>
+          <td>${l.days} วัน</td><td>${l.note||'-'}</td>
+        </tr>`}).join('')}
+      </tbody></table></div>`;
+  }
+  document.getElementById('rContent').innerHTML=html;
+}
+
+function exportXL(){
+  const fy=+(document.getElementById('rFY')?.value||getCFY());
+  const rows=[['ชื่อ-สกุล','ตำแหน่ง','ลาพักผ่อน (ใช้)','ลาพักผ่อน (โควต้า)','สะสม','ลากิจ (ใช้)','ลากิจ (โควต้า)','ลาป่วย (ใช้)','ลาป่วย (โควต้า)','รวม']];
+  for(const s of staffList){
+    const a=getUsed(s.id,'annual',fy);const p=getUsed(s.id,'personal',fy);const sk=getUsed(s.id,'sick',fy);
+    rows.push([s.name,s.pos,a,s.annual,s.annualCarry==='yes'?'ได้':'ไม่ได้',p,s.personal,sk,s.sick,a+p+sk]);
+  }
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'สรุปการลา');
+  XLSX.writeFile(wb,`รายงานการลา_ปีงบ${fy}.xlsx`);
+  toast('✅ ส่งออกไฟล์ Excel แล้ว');
+}
+
+// ===== HOLIDAYS =====
+function popHYears(){
+  const sel=document.getElementById('hYear');
+  sel.innerHTML=['2568','2569'].map(y=>`<option value="${y}">${y}</option>`).join('');
+}
+
+function renderHols(){
+  const yr=document.getElementById('hYear')?.value||'2568';
+  const adY=+yr-543;
+  const hols=HOLS.filter(h=>h.d.startsWith(adY+'-'));
+  const byM={};for(const h of hols){const m=+h.d.split('-')[1]-1;if(!byM[m])byM[m]=[];byM[m].push(h)}
+  let html=`<div style="margin-bottom:16px;color:var(--text2);font-size:13px">รวม <b>${hols.length}</b> วันหยุดราชการในปี พ.ศ. ${yr}</div>`;
+  for(let m=0;m<12;m++){
+    if(!byM[m])continue;
+    html+=`<div class="rsttitle">📅 ${MONTHS_TH[m]} ${yr}</div><div class="hgrid">`;
+    for(const h of byM[m]){
+      const d=new Date(h.d);
+      html+=`<div class="hitem"><div class="hdate">${d.getDate()}</div><div class="hinfo"><div class="hmo">${MONTHS_TH[m].slice(0,3)} ${yr}</div><div class="hn">${h.n}</div></div></div>`;
+    }
+    html+=`</div>`;
+  }
+  document.getElementById('hContent').innerHTML=html;
+}
+
+// ===== UTILS =====
+function closeM(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.moverlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+
+// Template Excel download
+function dlTemplate(){
+  const rows=[['ชื่อ-สกุล','ตำแหน่ง','โควต้าลาพักผ่อน','โควต้าลากิจ','โควต้าลาป่วย','สะสมลาพักผ่อน','สะสมลากิจ','สะสมลาป่วย'],
+    ['นายตัวอย่าง ใจดี','นักวิชาการ',10,3,30,'ได้','ไม่ได้','ไม่ได้']];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Template');
+  XLSX.writeFile(wb,'template_staff.xlsx');
+}
+</script>
+</body>
+</html>
