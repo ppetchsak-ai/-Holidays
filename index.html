@@ -178,18 +178,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 .time-input input{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);outline:none;width:130px}
 .time-input input:focus{border-color:var(--accent)}
 
-/* APPROVAL / STATUS */
-.statusTag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
-.statusTag.pending{background:#fff1bd;color:#8a5a1a}
-.statusTag.approved{background:#d5e8d8;color:#2f7a4f}
-.statusTag.rejected{background:#fde8e0;color:#c4544a}
-.statusTag.cancelled{background:#eef2f7;color:#7a6358}
-.ldot.pending{border:1px dashed currentColor;opacity:.75}
-.ldot.rejected,.ldot.cancelled{opacity:.45;text-decoration:line-through}
-.approval-actions{display:flex;gap:6px;flex-wrap:wrap}
-.btnOk{padding:5px 10px;background:#d5e8d8;color:#2f7a4f;border:none;border-radius:7px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700}
-.btnNo{padding:5px 10px;background:#fde8e0;color:#c4544a;border:none;border-radius:7px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700}
-.btnWarn{padding:5px 10px;background:#fff1bd;color:#8a5a1a;border:none;border-radius:7px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700}
+
+
+/* DASHBOARD */
+.dash-rank{display:flex;flex-direction:column;gap:8px}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:12px;font-size:13px;z-index:300;transform:translateY(80px);transition:transform .3s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
@@ -208,12 +200,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="lcard">
     <div class="llogo">📅</div>
     <h1>ระบบบันทึกวันลา</h1>
     <p style="color:var(--text2);font-size:13px;margin-bottom:6px">กลุ่มงานเภสัชกรรม</p>
-    <p style="color:var(--text3);font-size:12px;margin-bottom:28px">โรงพยาบาลพระอาจารย์ฝั้น อาจาโร</p>
+    <p style="color:var(--text3);font-size:12px;margin-bottom:28px">โรงพยาบาลสกลนคร</p>
     <div class="fg"><label>ชื่อผู้ใช้ (Username)</label><input type="text" id="lu" placeholder="กรอก username..." autocomplete="username"></div>
     <div class="fg" style="position:relative">
       <label>รหัสผ่าน</label>
@@ -228,6 +221,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
   <div class="topbar">
     <div class="tl">
@@ -247,15 +241,19 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   <div class="navtabs" id="navtabs">
     <div class="ntab active" onclick="sw('calendar',this)">📆 ปฏิทิน</div>
     <div class="ntab" onclick="sw('myLeave',this)">📋 วันลาของฉัน</div>
+    <div class="ntab" onclick="sw('dashboard',this)" id="tabDash">📊 Dashboard</div>
     <div class="ntab" onclick="sw('approvals',this)" id="tabApprovals">✅ อนุมัติวันลา</div>
     <div class="ntab" onclick="sw('staff',this)" id="tabStaff">👥 บุคลากร</div>
     <div class="ntab" onclick="sw('users',this)" id="tabUsers">🔑 บัญชีผู้ใช้</div>
     <div class="ntab" onclick="sw('report',this)" id="tabReport">📊 รายงาน</div>
     <div class="ntab" onclick="sw('tardy',this)" id="tabTardy">⏰ มาสาย</div>
     <div class="ntab" onclick="sw('holidays',this)">🎌 วันหยุดราชการ</div>
+    <div class="ntab" onclick="sw('holmgmt',this)" id="tabHolMgmt">⚙️ จัดการวันหยุด</div>
+    <div class="ntab" onclick="sw('help',this)">❓ คู่มือ</div>
   </div>
 
   <div class="content">
+    <!-- CALENDAR -->
     <div class="page active" id="page-calendar">
       <div class="cctrls">
         <div class="cnav">
@@ -281,6 +279,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
 
+    <!-- MY LEAVE -->
     <div class="page" id="page-myLeave">
       <div class="phdr">
         <h2>วันลาของฉัน</h2>
@@ -293,12 +292,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       <div class="stitle">ประวัติการลา ปีงบปัจจุบัน</div>
       <div class="ltable">
         <table>
-          <thead><tr><th>ประเภท</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>จำนวน</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <thead><tr><th>ประเภท</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
           <tbody id="mlTable"></tbody>
         </table>
       </div>
     </div>
 
+    <!-- STAFF -->
     <div class="page" id="page-approvals">
       <div class="phdr">
         <h2>✅ อนุมัติวันลา</h2>
@@ -326,6 +326,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     </div>
 
 
+    <!-- USERS -->
     <div class="page" id="page-users">
       <div class="phdr">
         <h2>จัดการบัญชีผู้ใช้</h2>
@@ -339,6 +340,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
 
+    <!-- REPORT -->
     <div class="page" id="page-report">
       <div class="phdr">
         <h2>รายงานสรุปการลา</h2>
@@ -354,6 +356,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     </div>
 
 
+    <!-- TARDY -->
     <div class="page" id="page-tardy">
       <div class="phdr">
         <h2>⏰ สถิติมาสาย</h2>
@@ -373,6 +376,32 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
 
+    <!-- HOLIDAYS -->
+
+    <!-- DASHBOARD -->
+    <div class="page" id="page-dashboard">
+      <div class="phdr">
+        <h2>📊 Dashboard สรุปวันลา</h2>
+        <select class="sel" id="dashFY" onchange="renderDashboard()" style="min-width:150px"></select>
+      </div>
+      <div id="dashContent"></div>
+    </div>
+
+    <!-- HOLIDAY MGMT -->
+    <div class="page" id="page-holmgmt">
+      <div class="phdr">
+        <h2>⚙️ จัดการวันหยุดราชการ</h2>
+        <button class="btnAdd" onclick="openAddHolModal()">+ เพิ่มวันหยุด</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">วันหยุดที่เพิ่มเองจะใช้ในการคำนวณวันทำการด้วย</div>
+      <div class="ltable">
+        <table>
+          <thead><tr><th>วันที่</th><th>ชื่อวันหยุด</th><th>ประเภท</th><th></th></tr></thead>
+          <tbody id="holMgmtTable"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="page" id="page-holidays">
       <div class="phdr">
         <h2>วันหยุดราชการ &amp; วันสำคัญ</h2>
@@ -380,9 +409,16 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       </div>
       <div id="hContent"></div>
     </div>
+
+    <!-- HELP PAGE -->
+    <div class="page" id="page-help">
+      <div id="helpContent"></div>
+    </div>
+
   </div>
 </div>
 
+<!-- LEAVE MODAL -->
 <div class="moverlay" id="leaveModal">
   <div class="modal">
     <button class="mclose" onclick="closeM('leaveModal')">&#10005;</button>
@@ -405,6 +441,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- STAFF MODAL -->
 <div class="moverlay" id="staffModal">
   <div class="modal">
     <button class="mclose" onclick="closeM('staffModal')">&#10005;</button>
@@ -415,7 +452,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="fg"><label>โควต้าลาพักผ่อน/ปี</label><input type="number" id="sAnn" value="10" min="0"></div>
       <div class="fg"><label>สะสมลาพักผ่อนได้</label><select id="sAnnC"><option value="yes">ได้</option><option value="no">ไม่ได้</option></select></div>
-      <div class="fg"><label>โควต้าลากิจ/ปี</label><input type="number" id="sPer" value="45" min="0"></div>
+      <div class="fg"><label>โควต้าลากิจ/ปี</label><input type="number" id="sPer" value="3" min="0"></div>
       <div class="fg"><label>สะสมลากิจได้</label><select id="sPerC"><option value="no">ไม่ได้</option><option value="yes">ได้</option></select></div>
       <div class="fg"><label>โควต้าลาป่วย/ปี</label><input type="number" id="sSic" value="30" min="0"></div>
       <div class="fg"><label>สะสมลาป่วยได้</label><select id="sSicC"><option value="no">ไม่ได้</option><option value="yes">ได้</option></select></div>
@@ -427,6 +464,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- STAFF DETAIL MODAL -->
 <div class="moverlay" id="sdModal">
   <div class="modal" style="width:560px">
     <button class="mclose" onclick="closeM('sdModal')">&#10005;</button>
@@ -449,6 +487,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 
+<!-- TARDY MODAL -->
 <div class="moverlay" id="tardyModal">
   <div class="modal" style="max-width:420px">
     <button class="mclose" onclick="closeM('tardyModal')">&#10005;</button>
@@ -474,6 +513,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 
+<!-- USER MODAL -->
 <div class="moverlay" id="userModal">
   <div class="modal">
     <button class="mclose" onclick="closeM('userModal')">&#10005;</button>
@@ -500,6 +540,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- CHANGE PASSWORD MODAL -->
 <div class="moverlay" id="chgPwModal">
   <div class="modal" style="max-width:380px">
     <button class="mclose" onclick="closeM('chgPwModal')">&#10005;</button>
@@ -514,6 +555,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 
+<!-- LEAVE EDIT MODAL -->
 <div class="moverlay" id="leaveEditModal">
   <div class="modal" style="width:560px">
     <button class="mclose" onclick="closeM('leaveEditModal')">&#10005;</button>
@@ -551,7 +593,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     <div style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:20px">
       <div style="font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px">สถิติมาสาย</div>
       <div id="leEditTardyList" style="max-height:160px;overflow-y:auto;margin-bottom:8px"></div>
-      <button onclick="openTardyModalForStaff(leEditStaffId)" style="padding:7px 14px;background:#fde8c8;color:#8a5a1a;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;font-weight:600">+ เพิ่มบันทึกมาสาย</button>
+      <button onclick="openTardyModalForStaff(leEditStaffId)" style="padding:7px 14px;background:var(--leave-holiday);color:#8a5a1a;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;font-weight:600">+ เพิ่มบันทึกมาสาย</button>
     </div>
 
     <div class="btnrow">
@@ -562,6 +604,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 
+<!-- LEAVE PLANNER MODAL -->
 <div class="moverlay" id="plannerModal">
   <div class="modal" style="width:540px">
     <button class="mclose" onclick="closeM('plannerModal')">&#10005;</button>
@@ -582,6 +625,39 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     </div>
 
     <div id="planResult"></div>
+  </div>
+</div>
+
+
+<!-- DAY DETAIL MODAL -->
+<div class="moverlay" id="dayModal">
+  <div class="modal" style="width:520px;max-height:88vh">
+    <button class="mclose" onclick="closeM('dayModal')">&#10005;</button>
+    <div id="dayModalContent"></div>
+  </div>
+</div>
+
+
+<!-- ADD HOLIDAY MODAL -->
+<div class="moverlay" id="addHolModal">
+  <div class="modal" style="max-width:400px">
+    <button class="mclose" onclick="closeM('addHolModal')">&#10005;</button>
+    <h2>เพิ่มวันหยุดราชการ</h2>
+    <div style="margin-bottom:18px"></div>
+    <div class="fg"><label>วันที่</label><input type="date" id="holDate"></div>
+    <div class="fg"><label>ชื่อวันหยุด</label><input type="text" id="holName" placeholder="เช่น วันหยุดชดเชย"></div>
+    <div class="fg">
+      <label>ประเภท</label>
+      <select class="sel" id="holType" style="width:100%">
+        <option value="official">ราชการ</option>
+        <option value="special">พิเศษ/ชดเชย</option>
+        <option value="custom">กำหนดเอง</option>
+      </select>
+    </div>
+    <div class="btnrow">
+      <button class="btnC" onclick="closeM('addHolModal')">ยกเลิก</button>
+      <button class="btnS" onclick="saveHol()">บันทึก</button>
+    </div>
   </div>
 </div>
 
@@ -620,49 +696,43 @@ const LTYPES = {
 
 // ===== STATE =====
 let CU=null,CRole='staff',CMo=new Date().getMonth(),CYr=new Date().getFullYear();
-let AFilters=new Set(['annual','personal','sick','late']);
-let SelLT=null,EditSId=null,currentDetailId=null;
+let AFilters=new Set(['annual','personal','sick','late']),SelLT=null,EditSId=null,currentDetailId=null;
 let TardyFilter='all';
-
-// Force-reset old data when version changes (BUG FIX: bumped to 2.2 for quota update)
-const DB_VER='2.2'; 
+// Force-reset old data when version changes
+const DB_VER='3.0';
 if(localStorage.getItem('lc_ver')!==DB_VER){
-  ['lc_s','lc_l','lc_t','lc_users'].forEach(k=>localStorage.removeItem(k));
+  ['lc_s','lc_l','lc_t','lc_users','lc_hols'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lc_ver',DB_VER);
 }
-
 let staffList=JSON.parse(localStorage.getItem('lc_s')||'[]');
 let tardyList=JSON.parse(localStorage.getItem('lc_t')||'[]');
-let leaves=JSON.parse(localStorage.getItem('lc_l')||'[]');
-// Backward compatibility: old records without status are treated as approved.
-leaves.forEach(l=>{ if(!l.status && !l.isCredit) l.status='approved'; });
+let leaves=JSON.parse(localStorage.getItem('lc_l')||'[]').filter(l=>!l.isCredit);
 
-// BUG FIX: Updated default personal quota to 45
 if(!staffList.length){
   staffList=[
-    {id:'s1', name:'น.ส.ภัทรานี คำภูแสน',      pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s2', name:'น.ส.จิตราภรณ์ คงดี',        pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s3', name:'น.ส.ชานิดา จันฤาไชย',       pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s4', name:'น.ส.สมฤทัย บุญญาวรรณ',      pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s5', name:'นายภุชงค์ เพ็ชรศักดิ์',      pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s6', name:'นายธนวัฒน์ สุริยนต์',        pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s7', name:'นายสถาพร กองธรรม',           pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s8', name:'น.ส.พชรนันต์ ชุมปัญญา',      pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s9', name:'นายจารุวิชญ์ จันทร์นามวงค์', pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s10',name:'นายกันตวิชญ์ เมืองแสน',      pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s11',name:'นายประกฤษฏิ์ นิลผาย',        pos:'เภสัชกร',           annual:10,personal:45,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
-    {id:'s12',name:'นางณัชชา หาระมี',             pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s13',name:'นางนิยะดา อินทะมาศ',          pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s14',name:'น.ส.พิชญาภา ลือแสน',         pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s15',name:'นายกิตินัทธ์ ชาเหลา',         pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s16',name:'น.ส.กรรชิตา ฉิมมาวัน',        pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s17',name:'น.ส.ประภัสสร งิ้วไชยราช',     pos:'จพ.เภสัชกรรม',      annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
-    {id:'s18',name:'น.ส.เยาวเรศ จิตอาคนารัตน์',   pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
-    {id:'s19',name:'นายวราเมศน์ กิจเจริญ',         pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
-    {id:'s20',name:'น.ส.จุฑามาศ ศรีประทุม',        pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
-    {id:'s21',name:'นางสุรินดา ราชโยธา',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
-    {id:'s22',name:'นายธีรยุทธ ม่วงลอด',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
-    {id:'s23',name:'นายทรงศักดิ์ แก้วดี',          pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:45,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s1', name:'น.ส.ภัทรานี คำภูแสน',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s2', name:'น.ส.จิตราภรณ์ คงดี',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s3', name:'น.ส.ชานิดา จันฤาไชย',       pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s4', name:'น.ส.สมฤทัย บุญญาวรรณ',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s5', name:'นายภุชงค์ เพ็ชรศักดิ์',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s6', name:'นายธนวัฒน์ สุริยนต์',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s7', name:'นายสถาพร กองธรรม',           pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s8', name:'น.ส.พชรนันต์ ชุมปัญญา',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s9', name:'นายจารุวิชญ์ จันทร์นามวงค์', pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s10',name:'นายกันตวิชญ์ เมืองแสน',      pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s11',name:'นายประกฤษฏิ์ นิลผาย',        pos:'เภสัชกร',           annual:10,personal:3,sick:30,annualCarry:'yes',personalCarry:'no',sickCarry:'no',color:'#e8a598'},
+    {id:'s12',name:'นางณัชชา หาระมี',             pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s13',name:'นางนิยะดา อินทะมาศ',          pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s14',name:'น.ส.พิชญาภา ลือแสน',         pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s15',name:'นายกิตินัทธ์ ชาเหลา',         pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s16',name:'น.ส.กรรชิตา ฉิมมาวัน',        pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s17',name:'น.ส.ประภัสสร งิ้วไชยราช',     pos:'จพ.เภสัชกรรม',      annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#a8c5b8'},
+    {id:'s18',name:'น.ส.เยาวเรศ จิตอาคนารัตน์',   pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s19',name:'นายวราเมศน์ กิจเจริญ',         pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s20',name:'น.ส.จุฑามาศ ศรีประทุม',        pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s21',name:'นางสุรินดา ราชโยธา',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s22',name:'นายธีรยุทธ ม่วงลอด',           pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
+    {id:'s23',name:'นายทรงศักดิ์ แก้วดี',          pos:'เจ้าหน้าที่ห้องยา', annual:10,personal:3,sick:30,annualCarry:'no', personalCarry:'no',sickCarry:'no',color:'#b8a8d8'},
   ];
   save();
 }
@@ -709,51 +779,46 @@ function save(){
   localStorage.setItem('lc_s',JSON.stringify(staffList));
   localStorage.setItem('lc_l',JSON.stringify(leaves));
   localStorage.setItem('lc_t',JSON.stringify(tardyList));
+  localStorage.setItem('lc_hols',JSON.stringify(customHols));
 }
 
 // ===== FISCAL YEAR ROLLOVER =====
+// At start of new FY: carry annual leave for eligible staff, reset personal/sick
 function checkFYRollover(){
   const fy = getCFY();
-  const rolloverKey = 'lc_rollover_' + fy;
-  if(localStorage.getItem(rolloverKey)) return; 
+  const rolloverKey = 'lc_rollover_fy_' + fy;
+  if(localStorage.getItem(rolloverKey)) return;
 
   const prevFY = fy - 1;
-  const {s:prevS, e:prevE} = fyRange(prevFY);
-  const {s:curS} = fyRange(fy);
-
   let changed = false;
+
   for(const staff of staffList){
-    const alreadyCarried = leaves.find(l =>
-      l.staffId === staff.id &&
-      l.startDate >= curS &&
-      l.note && l.note.includes('[ยกยอดลาพักผ่อน')
-    );
-    if(alreadyCarried) continue;
-
+    const BASE_ANNUAL = 10;
     const prevUsed = getUsed(staff.id, 'annual', prevFY);
-    const prevQuota = staff.annual || 10;
-    const prevRemain = Math.max(0, Math.min(prevQuota, prevQuota - prevUsed)); 
+    const prevQuota = staff.annual || BASE_ANNUAL;
+    const prevRemain = Math.max(0, prevQuota - prevUsed);
 
-    if(staff.annualCarry === 'yes' && prevRemain > 0){
-      leaves.push({
-        id: 'cf_ann_' + staff.id + '_' + fy,
-        staffId: staff.id,
-        type: 'annual',
-        startDate: curS, endDate: curS,
-        days: -prevRemain, 
-        note: `[ยกยอดลาพักผ่อน ${prevRemain} วัน จากปีงบ ${prevFY}]`,
-        isCredit: true,
-        createdAt: new Date().toISOString()
-      });
-      changed = true;
-    }
+    // Set new annual quota: base 10 + carry (if eligible)
+    const carryDays = (staff.annualCarry === 'yes') ? prevRemain : 0;
+    staff.annual = BASE_ANNUAL + carryDays;
+
+    // Reset personal and sick to base quota (no carry)
+    // Keep existing values as base quota (don't reset if admin set custom)
+    // personal and sick are always reset - stored quota stays, used becomes 0 via new FY
+    changed = true;
   }
 
-  if(changed) save();
-  localStorage.setItem(rolloverKey, '1');
+  if(changed){
+    save();
+    localStorage.setItem(rolloverKey, '1');
+    console.log('[FY Rollover] Done for FY', fy, '— annual updated with carry');
+  } else {
+    localStorage.setItem(rolloverKey, '1');
+  }
 }
 
 // ===== 15-WORKING-DAY CALCULATOR =====
+// Returns date that is N working days after startDate
 function addWorkdays(startDateStr, n){
   let d = new Date(startDateStr);
   let count = 0;
@@ -765,6 +830,8 @@ function addWorkdays(startDateStr, n){
   return d.toISOString().slice(0,10);
 }
 
+// Find earliest date where a block of N workdays can exist without conflicting with existing leave
+// Returns the first date where person has >= minWorkdays available in next 30 days
 function findAvailableBlock(staffId, minDays, fromDate){
   const results = [];
   let d = new Date(fromDate);
@@ -775,6 +842,7 @@ function findAvailableBlock(staffId, minDays, fromDate){
     const ds = d.toISOString().slice(0,10);
     if(!isWD(ds)){ d.setDate(d.getDate()+1); continue; }
 
+    // Check if this is a free workday (no existing leave)
     const hasLeave = leaves.some(l =>
       l.staffId === staffId &&
       !l.isCredit &&
@@ -788,7 +856,14 @@ function findAvailableBlock(staffId, minDays, fromDate){
 }
 
 // ===== UTILS =====
-function getHol(ds){return HOLS.find(h=>h.d===ds)}
+function getHolBuiltin(ds){return HOLS.find(h=>h.d===ds)}
+function leaveStatus(l){ return l.status || 'approved'; }
+function isApprovedLeave(l){ return l.isCredit || leaveStatus(l)==='approved'; }
+function statusBadge(status){
+  const s=status||'approved';
+  const txt={pending:'รออนุมัติ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ',cancelled:'ยกเลิก'}[s]||s;
+  return `<span class="statusTag ${s}">${txt}</span>`;
+}
 function isWD(ds){const d=new Date(ds);const dow=d.getDay();return dow!==0&&dow!==6&&!getHol(ds)}
 function countWD(s,e){let c=0;let d=new Date(s);const ed=new Date(e);while(d<=ed){if(isWD(d.toISOString().slice(0,10)))c++;d.setDate(d.getDate()+1)}return c}
 function getFY(date){const d=typeof date==='string'?new Date(date):date;return d.getMonth()>=9?d.getFullYear()+543+1:d.getFullYear()+543}
@@ -796,31 +871,17 @@ function getCFY(){return getFY(new Date())}
 function fyRange(fy){const y=fy-543;return{s:`${y-1}-10-01`,e:`${y}-09-30`}}
 function toThai(ds){if(!ds)return'';const d=new Date(ds);return`${d.getDate()} ${MONTHS_SH[d.getMonth()]} ${d.getFullYear()+543}`}
 function avColor(name){const cols=['#e8a598','#a8c5b8','#b8a8d8','#f0c878','#a0b8d8','#d8a0b8'];let h=0;for(let c of name)h=(h+c.charCodeAt(0))%cols.length;return cols[h]}
-function leaveStatus(l){
-  return l.status || (l.isCredit ? 'approved' : 'approved');
-}
-function isApprovedLeave(l){
-  return l.isCredit || leaveStatus(l) === 'approved';
-}
-function statusBadge(status){
-  const s=status || 'approved';
-  const txt={pending:'รออนุมัติ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ',cancelled:'ยกเลิก'}[s] || s;
-  return `<span class="statusTag ${s}">${txt}</span>`;
-}
 function getUsed(sid,type,fy){
   const{s,e}=fyRange(fy);
+  // Only count real leave taken — exclude credit/adjustment records
   return leaves
-    .filter(l=>l.staffId===sid&&l.type===type&&l.startDate>=s&&l.startDate<=e&&isApprovedLeave(l))
+    .filter(l=>l.staffId===sid&&l.type===type&&l.startDate>=s&&l.startDate<=e&&!l.isCredit&&l.days>0)
     .reduce((acc,l)=>acc+l.days,0);
 }
-function getBalance(staff, type, fy){
-  const{s,e}=fyRange(fy);
-  const recs=leaves.filter(l=>l.staffId===staff.id&&l.type===type&&l.startDate>=s&&l.startDate<=e&&isApprovedLeave(l));
-  const credits=recs.filter(l=>l.isCredit).reduce((a,l)=>a+Math.abs(l.days),0);
-  const used=recs.filter(l=>!l.isCredit).reduce((a,l)=>a+l.days,0);
-  const netUsed = Math.max(0, used + recs.filter(l=>l.isCredit).reduce((a,l)=>a+l.days,0));
-  const quota = staff[type] || 0;
-  return { used: netUsed, quota, remain: Math.max(0, quota - netUsed), credits };
+function getBalance(staff,type,fy){
+  const used=getUsed(staff.id,type,fy);
+  const quota=staff[type]||0;
+  return{used,quota,remain:Math.max(0,quota-used)};
 }
 function getStaffLeaves(sid,fy){const{s,e}=fyRange(fy);return leaves.filter(l=>l.staffId===sid&&l.startDate>=s&&l.startDate<=e)}
 
@@ -854,12 +915,10 @@ function doLogin(){
     document.getElementById('tabStaff').style.display = 'none';
     document.getElementById('tabReport').style.display = 'none';
     document.getElementById('tabUsers').style.display = 'none';
-    document.getElementById('tabApprovals').style.display = 'none';
   } else {
     document.getElementById('tabStaff').style.display = '';
     document.getElementById('tabReport').style.display = '';
     document.getElementById('tabUsers').style.display = '';
-    document.getElementById('tabApprovals').style.display = '';
   }
   document.getElementById('tabTardy').style.display = '';
   checkFYRollover(); renderCal(); renderMySummary(); renderMyTable(); renderSGrid();
@@ -880,12 +939,14 @@ function sw(tab,el){
   el.classList.add('active');
   document.getElementById('page-'+tab).classList.add('active');
   if(tab==='myLeave'){renderMySummary();renderMyTable()}
-  if(tab==='approvals')renderApprovals();
   if(tab==='staff')renderSGrid();
   if(tab==='report'){popRFilters();renderReport()}
   if(tab==='tardy'){renderTardyPage()}
   if(tab==='users'){renderUsersTable()}
   if(tab==='holidays'){popHYears();renderHols()}
+  if(tab==='dashboard'){renderDashboard()}
+  if(tab==='holmgmt'){renderHolMgmt()}
+  if(tab==='help'){renderHelp()}
 }
 
 // ===== CALENDAR =====
@@ -922,12 +983,12 @@ function renderCal(){
       for(const sid of sids){
         const st=staffList.find(s=>s.id===sid);
         if(!st)continue;
-        const dl=leaves.filter(l=>l.staffId===sid&&!l.isCredit&&l.startDate<=ds&&l.endDate>=ds&&AFilters.has(l.type)&&leaveStatus(l)!=='rejected'&&leaveStatus(l)!=='cancelled');
+        const dl=leaves.filter(l=>l.staffId===sid&&l.startDate<=ds&&l.endDate>=ds&&AFilters.has(l.type));
         for(const lv of dl){
           const t=LTYPES[lv.type];
-          const lbl=CRole==='admin'?`${t.ico} ${st.name.split(' ').pop()}`:(`${t.ico} ${t.lbl}`);
+          const lbl=CRole==='admin'?`${t.ico} ${st.name.split('').slice(-4).join('')}||${st.name.split(' ').pop()}`:(`${t.ico} ${t.lbl}`);
           const nm=CRole==='admin'?(st.name.length>6?st.name.slice(0,6)+'..':st.name):t.lbl;
-          inn+=`<div class="ldot ${t.cls} ${leaveStatus(lv)}">${t.ico} ${nm}${leaveStatus(lv)==="pending"?" · รอ":""}</div>`;
+          inn+=`<div class="ldot ${t.cls}">${t.ico} ${nm}</div>`;
         }
       // Tardy dots
       if(AFilters.has('late')||AFilters.has('request')){
@@ -941,12 +1002,12 @@ function renderCal(){
     }
     // Multi-person badge for admin
     if(!om && CRole==='admin'){
-      const lcount = leaves.filter(l=>!l.isCredit&&isApprovedLeave(l)&&l.startDate<=ds&&l.endDate>=ds).length;
+      const lcount = leaves.filter(l=>!l.isCredit&&l.startDate<=ds&&l.endDate>=ds).length;
       const tcount = tardyList.filter(t=>t.date===ds).length;
       if(lcount>0) inn += `<div style="font-size:9px;background:#e8a598;color:white;border-radius:3px;padding:1px 4px;margin-top:2px;font-weight:700">${lcount} คนลา</div>`;
       if(tcount>0) inn += `<div style="font-size:9px;background:#f0c878;color:#7a5a18;border-radius:3px;padding:1px 4px;font-weight:700">⏰${tcount}</div>`;
     }
-    html+=`<div class="${cls}" onclick="openLeaveModal('${ds}')">${inn}</div>`;
+    html+=`<div class="${cls}" onclick="openDayDetail('${ds}')">${inn}</div>`;
   }
   document.getElementById('cdays').innerHTML=html;
 }
@@ -999,6 +1060,7 @@ function submitLeave(){
   const days=countWD(s,e);
   if(days===0){toast('ไม่มีวันทำงานในช่วงที่เลือก');return}
 
+  // 15-workday check
   const fy=getCFY();
   const{e:fyEnd}=fyRange(fy);
   const today=new Date().toISOString().slice(0,10);
@@ -1010,21 +1072,16 @@ function submitLeave(){
     if(isWD(ds)) totalWD++;
     scanFrom.setDate(scanFrom.getDate()+1);
   }
-  const plannedLeave=leaves.filter(l=>l.staffId===sid&&!l.isCredit&&isApprovedLeave(l)&&l.startDate>=today&&l.startDate<=fyEnd).reduce((a,l)=>a+l.days,0);
+  const plannedLeave=leaves.filter(l=>l.staffId===sid&&!l.isCredit&&l.startDate>=today&&l.startDate<=fyEnd).reduce((a,l)=>a+l.days,0);
   const wdAfter=totalWD-plannedLeave-days;
   if(wdAfter<15){
     const ok=confirm(`⚠️ คำเตือน: หลังลา ${days} วัน จะเหลือวันทำการในปีงบนี้ ${wdAfter} วัน ซึ่งน้อยกว่า 15 วัน\n\nต้องการบันทึกต่อหรือไม่?`);
     if(!ok) return;
   }
 
-  const overlap=leaves.filter(l=>l.staffId===sid&&!l.isCredit&&leaveStatus(l)!=='rejected'&&leaveStatus(l)!=='cancelled'&&l.startDate<=e&&l.endDate>=s);
-  if(overlap.length>0){
-    const ok=confirm(`⚠️ มีรายการลาของคนนี้ซ้อนในช่วงวันที่เลือก ${overlap.length} รายการ\n\nต้องการบันทึกต่อหรือไม่?`);
-    if(!ok) return;
-  }
-
+  // Check if others already on leave same day (admin notification)
   if(CRole==='admin'){
-    const otherLeaves=leaves.filter(l=>!l.isCredit&&isApprovedLeave(l)&&l.staffId!==sid&&l.startDate<=e&&l.endDate>=s);
+    const otherLeaves=leaves.filter(l=>!l.isCredit&&l.staffId!==sid&&l.startDate<=e&&l.endDate>=s);
     if(otherLeaves.length>0){
       const names=[...new Set(otherLeaves.map(l=>{const st=staffList.find(x=>x.id===l.staffId);return st?st.name.split(' ').pop():'';}))].join(', ');
       const ok=confirm(`ℹ️ แจ้งเตือน: มีเพื่อนร่วมงานลาในช่วงนี้แล้ว ${otherLeaves.length} รายการ (${names})\n\nต้องการบันทึกต่อหรือไม่?`);
@@ -1032,82 +1089,8 @@ function submitLeave(){
     }
   }
 
-  const status = CRole==='admin' ? 'approved' : 'pending';
-  leaves.push({
-    id:'lv'+Date.now(),staffId:sid,type:SelLT,startDate:s,endDate:e,days,
-    note:document.getElementById('lNote').value,
-    status,
-    requestedBy:CU.name,
-    approvedBy:CRole==='admin'?CU.name:'',
-    approvedAt:CRole==='admin'?new Date().toISOString():'',
-    createdAt:new Date().toISOString()
-  });
-  save();closeM('leaveModal');renderCal();renderMySummary();renderMyTable();toast(status==='pending'?`✅ ส่งคำขอวันลา ${days} วัน รอ Admin อนุมัติ`:`✅ บันทึกการลา ${days} วันทำงาน`);
-}
-
-
-// ===== APPROVALS =====
-function renderApprovals(){
-  if(CRole!=='admin') return;
-  const fy=getCFY(); const {s,e}=fyRange(fy);
-  const recs=leaves
-    .filter(l=>!l.isCredit&&l.startDate>=s&&l.startDate<=e)
-    .sort((a,b)=>String(a.status==='pending'?0:1).localeCompare(String(b.status==='pending'?0:1)) || b.startDate.localeCompare(a.startDate));
-
-  const pending=recs.filter(l=>leaveStatus(l)==='pending').length;
-  const approved=recs.filter(l=>leaveStatus(l)==='approved').length;
-  const rejected=recs.filter(l=>leaveStatus(l)==='rejected').length;
-  const cancelled=recs.filter(l=>leaveStatus(l)==='cancelled').length;
-  const cards=document.getElementById('approvalCards');
-  if(cards) cards.innerHTML=`
-    <div class="scard"><div class="clbl">รออนุมัติ</div><div class="cval" style="color:#8a5a1a">${pending}</div><div class="csub">ต้องดำเนินการ</div></div>
-    <div class="scard"><div class="clbl">อนุมัติแล้ว</div><div class="cval" style="color:#2f7a4f">${approved}</div><div class="csub">ปีงบ ${fy}</div></div>
-    <div class="scard"><div class="clbl">ไม่อนุมัติ</div><div class="cval" style="color:#c4544a">${rejected}</div><div class="csub">ปีงบ ${fy}</div></div>
-    <div class="scard"><div class="clbl">ยกเลิก</div><div class="cval" style="color:#7a6358">${cancelled}</div><div class="csub">เก็บไว้เป็น audit</div></div>`;
-
-  const tbl=document.getElementById('approvalTable');
-  if(!tbl) return;
-  if(!recs.length){
-    tbl.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">ยังไม่มีรายการวันลา</td></tr>';
-    return;
-  }
-  tbl.innerHTML=recs.map(l=>{
-    const st=staffList.find(s=>s.id===l.staffId);
-    const t=LTYPES[l.type];
-    const sTxt=leaveStatus(l);
-    const act=sTxt==='pending'
-      ? `<div class="approval-actions"><button class="btnOk" onclick="approveLeave('${l.id}')">อนุมัติ</button><button class="btnNo" onclick="rejectLeave('${l.id}')">ไม่อนุมัติ</button></div>`
-      : `<div class="approval-actions"><button class="btnWarn" onclick="delLeaveAdmin('${l.id}')">ยกเลิก</button></div>`;
-    return `<tr>
-      <td>${statusBadge(sTxt)}</td>
-      <td><b>${st?st.name:'-'}</b><br><small>${st?st.pos:''}</small></td>
-      <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
-      <td>${toThai(l.startDate)}${l.startDate!==l.endDate?' – '+toThai(l.endDate):''}</td>
-      <td><b>${l.days}</b> วัน</td>
-      <td>${l.note||'-'}<br><small style="color:var(--text3)">ผู้ส่ง: ${l.requestedBy||'-'}</small></td>
-      <td>${act}</td>
-    </tr>`;
-  }).join('');
-}
-
-function approveLeave(id){
-  const row=leaves.find(l=>l.id===id);
-  if(!row) return;
-  row.status='approved';
-  row.approvedBy=CU.name;
-  row.approvedAt=new Date().toISOString();
-  save(); renderApprovals(); renderCal(); renderReport(); toast('✅ อนุมัติวันลาแล้ว');
-}
-
-function rejectLeave(id){
-  const row=leaves.find(l=>l.id===id);
-  if(!row) return;
-  const reason=prompt('ระบุเหตุผลไม่อนุมัติ (ถ้ามี)') || '';
-  row.status='rejected';
-  row.rejectReason=reason;
-  row.approvedBy=CU.name;
-  row.approvedAt=new Date().toISOString();
-  save(); renderApprovals(); renderCal(); renderReport(); toast('บันทึกไม่อนุมัติแล้ว');
+  leaves.push({id:'lv'+Date.now(),staffId:sid,type:SelLT,startDate:s,endDate:e,days,note:document.getElementById('lNote').value,createdAt:new Date().toISOString()});
+  save();closeM('leaveModal');renderCal();renderMySummary();renderMyTable();toast(`✅ บันทึกการลา ${days} วันทำงาน`);
 }
 
 // ===== MY LEAVE =====
@@ -1133,29 +1116,21 @@ function renderMySummary(){
 function renderMyTable(){
   const sid=CRole==='staff'?CU.id:null;
   const fy=getCFY();const{s,e}=fyRange(fy);
-  const recs=leaves.filter(l=>(!sid||l.staffId===sid)&&!l.isCredit&&l.startDate>=s&&l.startDate<=e).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  const recs=leaves.filter(l=>(!sid||l.staffId===sid)&&l.startDate>=s&&l.startDate<=e).sort((a,b)=>b.startDate.localeCompare(a.startDate));
   const el=document.getElementById('mlTable');if(!el)return;
   el.innerHTML=recs.length===0
-    ?'<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
-    :recs.map(l=>{const t=LTYPES[l.type];const canCancel=leaveStatus(l)==='pending'||CRole==='admin';return`<tr>
+    ?'<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
+    :recs.map(l=>{const t=LTYPES[l.type];return`<tr>
       <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
       <td>${toThai(l.startDate)}</td><td>${toThai(l.endDate)}</td>
-      <td><b>${l.days}</b> วัน</td>
-      <td>${statusBadge(leaveStatus(l))}</td>
-      <td>${l.note||'-'}</td>
-      <td>${canCancel?`<button class="btnWarn" onclick="delLeave('${l.id}')">ยกเลิก</button>`:''}</td>
+      <td><b>${l.days}</b> วัน</td><td>${l.note||'-'}</td>
+      <td><button class="btnDel" onclick="delLeave('${l.id}')">ลบ</button></td>
     </tr>`}).join('');
 }
 
 function delLeave(id){
-  const row=leaves.find(l=>l.id===id);
-  if(!row) return;
-  if(leaveStatus(row)==='approved' && CRole!=='admin'){toast('รายการที่อนุมัติแล้วต้องให้ Admin ยกเลิก');return}
-  if(!confirm('ต้องการยกเลิกรายการนี้?'))return;
-  row.status='cancelled';
-  row.cancelledBy=CU.name;
-  row.cancelledAt=new Date().toISOString();
-  save();renderCal();renderMySummary();renderMyTable();toast('ยกเลิกรายการแล้ว');
+  if(!confirm('ต้องการลบรายการนี้?'))return;
+  leaves=leaves.filter(l=>l.id!==id);save();renderCal();renderMySummary();renderMyTable();toast('ลบรายการแล้ว');
 }
 
 // ===== STAFF =====
@@ -1191,8 +1166,7 @@ function openStaffModal(){
   document.getElementById('smTitle').textContent='เพิ่มบุคลากร';
   ['sName','sPos'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sAnn').value=10;
-  // BUG FIX: Updated fallback input to 45
-  document.getElementById('sPer').value=45;
+  document.getElementById('sPer').value=3;
   document.getElementById('sSic').value=30;
   document.getElementById('staffModal').classList.add('open');
 }
@@ -1217,16 +1191,7 @@ function saveStaff(){
   const name=document.getElementById('sName').value.trim();
   const pos=document.getElementById('sPos').value.trim();
   if(!name){toast('กรุณาระบุชื่อ');return}
-  const data={
-    name,pos,
-    annual:+document.getElementById('sAnn').value || 10,
-    personal:+document.getElementById('sPer').value || 45, // BUG FIX: Fallback 45
-    sick:+document.getElementById('sSic').value || 30,
-    annualCarry:document.getElementById('sAnnC').value,
-    personalCarry:document.getElementById('sPerC').value,
-    sickCarry:document.getElementById('sSicC').value,
-    color:avColor(name)
-  };
+  const data={name,pos,annual:+document.getElementById('sAnn').value,personal:+document.getElementById('sPer').value,sick:+document.getElementById('sSic').value,annualCarry:document.getElementById('sAnnC').value,personalCarry:document.getElementById('sPerC').value,sickCarry:document.getElementById('sSicC').value,color:avColor(name)};
   if(EditSId){const i=staffList.findIndex(s=>s.id===EditSId);if(i>=0)staffList[i]={...staffList[i],...data}}
   else staffList.push({id:'s'+Date.now(),...data});
   save();closeM('staffModal');renderSGrid();toast('บันทึกข้อมูลแล้ว');
@@ -1254,25 +1219,20 @@ function openSD(sid){
   document.getElementById('sdCards').innerHTML=ch;
   const recs=getStaffLeaves(sid,fy).sort((a,b)=>b.startDate.localeCompare(a.startDate));
   document.getElementById('sdTable').innerHTML=recs.length===0
-    ?'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
+    ?'<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีประวัติการลา</td></tr>'
     :recs.map(l=>{const t=LTYPES[l.type];return`<tr>
       <td><span class="badge ${t.cls}">${t.ico} ${t.lbl}</span></td>
       <td>${toThai(l.startDate)}${l.startDate!==l.endDate?' – '+toThai(l.endDate):''}</td>
-      <td>${l.days} วัน</td><td>${statusBadge(leaveStatus(l))}</td><td>${l.note||'-'}</td>
-      <td><button class="btnDel" onclick="delLeaveAdmin('${l.id}')">ยกเลิก</button></td>
+      <td>${l.days} วัน</td><td>${l.note||'-'}</td>
+      <td><button class="btnDel" onclick="delLeaveAdmin('${l.id}')">ลบ</button></td>
     </tr>`}).join('');
   document.getElementById('sdModal').classList.add('open');
 }
 
 function delLeaveAdmin(id){
-  const row=leaves.find(l=>l.id===id);
-  if(!row) return;
-  if(!confirm('ต้องการยกเลิกรายการนี้?'))return;
-  row.status='cancelled';
-  row.cancelledBy=CU.name;
-  row.cancelledAt=new Date().toISOString();
-  save();
-  openSD(currentDetailId);renderCal();renderApprovals();toast('ยกเลิกรายการแล้ว');
+  if(!confirm('ต้องการลบรายการนี้?'))return;
+  leaves=leaves.filter(l=>l.id!==id);save();
+  openSD(currentDetailId);renderCal();toast('ลบรายการแล้ว');
 }
 
 // ===== IMPORT EXCEL =====
@@ -1292,7 +1252,7 @@ function importXL(event){
           id:'sx'+Date.now()+cnt,
           name,pos:(row['ตำแหน่ง']||row['position']||'').toString(),
           annual:+(row['โควต้าลาพักผ่อน']||row['ลาพักผ่อน']||10),
-          personal:+(row['โควต้าลากิจ']||row['ลากิจ']||45), // BUG FIX: Fallback 45
+          personal:+(row['โควต้าลากิจ']||row['ลากิจ']||3),
           sick:+(row['โควต้าลาป่วย']||row['ลาป่วย']||30),
           annualCarry:(row['สะสมลาพักผ่อน']||'ได้')==='ได้'?'yes':'no',
           personalCarry:(row['สะสมลากิจ']||'ไม่ได้')==='ได้'?'yes':'no',
@@ -1404,6 +1364,7 @@ function renderHols(){
 
 // ===== TARDINESS (Admin-only recording) =====
 function calcLateMins(timeStr){
+  // work starts 08:30
   const [h,m] = timeStr.split(':').map(Number);
   const arrMins = h*60+m;
   const startMins = 8*60+30;
@@ -1458,6 +1419,7 @@ function renderTardyPage(){
   let recs=tardyList.filter(t=>t.date>=s&&t.date<=e&&(!sid||t.staffId===sid));
   recs=recs.sort((a,b)=>b.date.localeCompare(a.date));
 
+  // Summary cards
   const lateCount=recs.length;
   const totalMins=recs.reduce((acc,t)=>acc+(t.lateMins||0),0);
   const topStaff = (() => {
@@ -1513,13 +1475,13 @@ function openLeaveEditModal(sid){
   const s = staffList.find(x=>x.id===sid); if(!s) return;
   document.getElementById('leEditName').textContent = s.name + ' · ' + s.pos;
   document.getElementById('leAnnQuota').value = s.annual||10;
-  // BUG FIX: Updated fallback edit input to 45
-  document.getElementById('lePerQuota').value = s.personal||45;
+  document.getElementById('lePerQuota').value = s.personal||3;
   document.getElementById('leSicQuota').value = s.sick||30;
   document.getElementById('leAnnAdj').value = '';
   document.getElementById('lePerAdj').value = '';
   document.getElementById('leSicAdj').value = '';
 
+  // Show tardiness for this staff
   const fy=getCFY(); const{s:fs,e:fe}=fyRange(fy);
   const trecs=tardyList.filter(t=>t.staffId===sid&&t.date>=fs&&t.date<=fe).sort((a,b)=>b.date.localeCompare(a.date));
   const tDiv=document.getElementById('leEditTardyList');
@@ -1559,10 +1521,14 @@ function openTardyModalForStaff(sid){
 
 function saveLeaveEdit(){
   const s=staffList.find(x=>x.id===leEditStaffId); if(!s) return;
-  s.annual  = +document.getElementById('leAnnQuota').value || s.annual;
-  s.personal= +document.getElementById('lePerQuota').value || s.personal;
-  s.sick    = +document.getElementById('leSicQuota').value || s.sick;
+  const newAnn=+document.getElementById('leAnnQuota').value;
+  const newPer=+document.getElementById('lePerQuota').value;
+  const newSic=+document.getElementById('leSicQuota').value;
+  if(newAnn>=0) s.annual=newAnn;
+  if(newPer>=0) s.personal=newPer;
+  if(newSic>=0) s.sick=newSic;
 
+  // Apply adjustments as leave records
   const fy=getCFY();
   const today=new Date().toISOString().slice(0,10);
   const adjs=[
@@ -1590,6 +1556,129 @@ function saveLeaveEdit(){
 }
 
 
+
+// ===== DAY DETAIL MODAL =====
+function openDayDetail(ds){
+  const d = new Date(ds);
+  const dow = d.getDay();
+  const dowNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const hol = getHol(ds);
+  const isWd = isWD(ds);
+  const today = new Date().toISOString().slice(0,10);
+  const isTd = ds === today;
+
+  // Leaves on this day
+  const dayLeaves = leaves.filter(l =>
+    !l.isCredit && l.startDate <= ds && l.endDate >= ds
+  );
+  // Tardy on this day
+  const dayTardy = tardyList.filter(t => t.date === ds);
+
+  // Date header
+  let html = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:28px;font-weight:800;color:${dow===0?'#e07060':dow===6?'#6070b0':'var(--text)'}">${d.getDate()}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()]} ${d.getFullYear()+543}</div>
+        <div style="font-size:13px;color:var(--text2)">วัน${dowNames[dow]}</div>
+        ${isTd?'<div style="display:inline-block;background:var(--accent);color:white;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:4px">วันนี้</div>':''}
+      </div>
+      <div style="text-align:right">
+        ${hol?`<div style="background:#fde8e0;color:#e07060;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600">🎌 ${hol.n}</div>`:''}
+        ${!isWd&&!hol?`<div style="background:var(--surface2);color:var(--text3);padding:6px 12px;border-radius:10px;font-size:12px">วันหยุด</div>`:''}
+        ${isWd?`<div style="background:#d5e8d8;color:#3a7a50;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600">✅ วันทำการ</div>`:''}
+      </div>
+    </div>`;
+
+  // Leave section
+  const myLeaves = CRole==='staff'
+    ? dayLeaves.filter(l => l.staffId === CU.id)
+    : dayLeaves;
+
+  if(myLeaves.length > 0){
+    html += `<div style="font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">
+      📋 ${CRole==='admin'?`การลา (${myLeaves.length} รายการ)`:'วันลาของฉัน'}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">`;
+
+    for(const lv of myLeaves){
+      const t = LTYPES[lv.type];
+      const st = staffList.find(s => s.id === lv.staffId);
+      const nm = st ? st.name : '-';
+      const pos = st ? st.pos : '';
+      const spanDays = countWD(lv.startDate, lv.endDate);
+      html += `
+        <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:10px;background:${t.cls==='annual'?'var(--annual)':t.cls==='personal'?'var(--personal)':'var(--sick)'};display:flex;align-items:center;justify-content:center;font-size:18px">${t.ico}</div>
+            <div>
+              ${CRole==='admin'?`<div style="font-size:13px;font-weight:700">${nm}</div><div style="font-size:11px;color:var(--text3)">${pos}</div>`:''}
+              <div style="font-size:12px;color:var(--text2)">${t.lbl} · ${toThai(lv.startDate)}${lv.startDate!==lv.endDate?' – '+toThai(lv.endDate):''}</div>
+              ${lv.note?`<div style="font-size:11px;color:var(--text3)">${lv.note}</div>`:''}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:18px;font-weight:800;color:var(--text)">${spanDays}</div>
+            <div style="font-size:10px;color:var(--text3)">วันทำการ</div>
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  } else if(isWd){
+    html += `<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:20px">
+      ✅ ไม่มีการลาวันนี้
+    </div>`;
+  }
+
+  // Tardy section
+  const myTardy = CRole==='staff'
+    ? dayTardy.filter(t => t.staffId === CU.id)
+    : dayTardy;
+
+  if(myTardy.length > 0){
+    html += `<div style="font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">
+      ⏰ มาสาย (${myTardy.length} รายการ)
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">`;
+    for(const tv of myTardy){
+      const st = staffList.find(s=>s.id===tv.staffId);
+      html += `
+        <div style="background:#fff8f0;border:1px solid #fde8c8;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            ${CRole==='admin'?`<div style="font-size:13px;font-weight:700">${st?st.name:'-'}</div>`:''}
+            <div style="font-size:12px;color:var(--text2)">มาถึง ${tv.time} น.</div>
+            ${tv.reason?`<div style="font-size:11px;color:var(--text3)">${tv.reason}</div>`:''}
+          </div>
+          <div style="background:#fde8c8;color:#8a5a1a;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700">
+            ⏰ ${tv.lateMins||0} นาที
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Action button
+  if(isWd){
+    html += `<div style="border-top:1px solid var(--border);padding-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btnS" style="flex:1" onclick="closeM('dayModal');openLeaveModal('${ds}')">+ บันทึกวันลา</button>
+      ${CRole==='admin'?`<button class="btnAdd" style="background:linear-gradient(135deg,#f0c878,#d4a840);flex:0 0 auto" onclick="closeM('dayModal');openTardyModalForDate('${ds}')">⏰ บันทึกมาสาย</button>`:''}
+    </div>`;
+  }
+
+  document.getElementById('dayModalContent').innerHTML = html;
+  document.getElementById('dayModal').classList.add('open');
+}
+
+function openTardyModalForDate(ds){
+  if(CRole!=='admin') return;
+  document.getElementById('tDate').value = ds;
+  document.getElementById('tTime').value = '08:30';
+  document.getElementById('tReason').value = '';
+  const sel = document.getElementById('tStaffSel');
+  sel.innerHTML = staffList.map(s=>`<option value="${s.id}">${s.name} (${s.pos})</option>`).join('');
+  document.getElementById('tardyModal').classList.add('open');
+}
+
 // ===== LEAVE PLANNER (15-workday rule) =====
 function openLeavePlanner(){
   document.getElementById('planFrom').value = new Date().toISOString().slice(0,10);
@@ -1610,6 +1699,7 @@ function calcLeavePlan(){
   const fy = getCFY();
   const {s:fyStart, e:fyEnd} = fyRange(fy);
 
+  // Count remaining workdays in fiscal year from today
   let totalWD = 0;
   let d = new Date(fromStr);
   const fyEndDate = new Date(fyEnd);
@@ -1620,6 +1710,7 @@ function calcLeavePlan(){
     temp.setDate(temp.getDate()+1);
   }
 
+  // Count already-planned leave days
   const plannedLeave = leaves.filter(l =>
     l.staffId===sid && !l.isCredit &&
     l.startDate >= fromStr && l.startDate <= fyEnd
@@ -1628,6 +1719,7 @@ function calcLeavePlan(){
   const workdaysAfterLeave = totalWD - plannedLeave - nDays;
   const canTake = workdaysAfterLeave >= 15;
 
+  // Find valid windows
   let html = '';
 
   if(canTake){
@@ -1642,6 +1734,7 @@ function calcLeavePlan(){
     </div>`;
   }
 
+  // Show WD breakdown
   html += `<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px">
     <div style="font-weight:600;margin-bottom:10px;color:var(--text)">📊 สรุปวันทำการในปีงบ ${fy}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -1652,6 +1745,7 @@ function calcLeavePlan(){
     </div>
   </div>`;
 
+  // Find available dates (consecutive free workdays)
   html += `<div style="font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">📅 ช่วงวันที่แนะนำ (ไม่ชนวันลาอื่น)</div>`;
 
   let suggestions = [];
@@ -1669,6 +1763,7 @@ function calcLeavePlan(){
       if(!hasLeave){
         freeBlock.push(ds);
         if(freeBlock.length === nDays){
+          // Verify remaining WD after this block >= 15
           let wdAfter = 0;
           const blockEnd = freeBlock[freeBlock.length-1];
           const check = new Date(blockEnd);
@@ -1716,8 +1811,205 @@ function quickLeave(start, end){
   document.getElementById('leaveModal').classList.add('open');
 }
 
+// ===== LEAVE NOTIFICATION in calendar =====
+// Show badge if multiple people leave same day
 function getDateLeaveCount(ds){
   return leaves.filter(l => !l.isCredit && l.startDate <= ds && l.endDate >= ds).length;
+}
+
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const fysel=document.getElementById('dashFY');
+  if(fysel&&!fysel.options.length){
+    const fy=getCFY();
+    fysel.innerHTML=[fy-1,fy,fy+1].map(y=>`<option value="${y}"${y===fy?' selected':''}>${y===fy?'📌 ':''} ปีงบ ${y}</option>`).join('');
+  }
+  const fy=+(document.getElementById('dashFY')?.value||getCFY());
+  const sid=CRole==='staff'?CU.id:null;
+  const showStaff=sid?staffList.filter(s=>s.id===sid):staffList;
+  
+  const {s:fyS,e:fyE}=fyRange(fy);
+  const tardyInFY=tardyList.filter(t=>t.date>=fyS&&t.date<=fyE);
+
+  let html='';
+
+  // ===== Personal summary (staff) or team overview (admin) =====
+  if(CRole==='staff'){
+    const s=staffList.find(x=>x.id===CU.id);
+    if(!s){document.getElementById('dashContent').innerHTML='<p style="color:var(--text3)">ไม่พบข้อมูล</p>';return;}
+    const a=getLeaveStats(s.id,'annual',fy);
+    const p=getLeaveStats(s.id,'personal',fy);
+    const sk=getLeaveStats(s.id,'sick',fy);
+    const myTardy=tardyInFY.filter(t=>t.staffId===s.id);
+    const totalMins=myTardy.reduce((a,t)=>a+(t.lateMins||0),0);
+
+    html+=`<div style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--text2)">สรุปปีงบ ${fy} — ${s.name}</div>`;
+    html+=`<div class="scards" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px">
+      <div class="scard annual"><div class="clbl">🌸 ลาพักผ่อน</div><div class="cval">${a.remain}</div><div class="csub">เหลือ / ${a.totalQuota} วัน<br>ใช้ ${a.realUsed} วัน</div></div>
+      <div class="scard personal"><div class="clbl">🍃 ลากิจ</div><div class="cval">${p.remain}</div><div class="csub">เหลือ / ${p.totalQuota} วัน<br>ใช้ ${p.realUsed} วัน</div></div>
+      <div class="scard sick"><div class="clbl">💙 ลาป่วย</div><div class="cval">${sk.remain}</div><div class="csub">เหลือ / ${sk.totalQuota} วัน<br>ใช้ ${sk.realUsed} วัน</div></div>
+      <div class="scard late"><div class="clbl">⏰ มาสาย</div><div class="cval">${myTardy.length}</div><div class="csub">ครั้ง · ${totalMins} นาที</div></div>
+    </div>`;
+
+    // Leave timeline
+    const myLeaves=leaves.filter(l=>l.staffId===s.id&&!l.isCredit&&l.startDate>=fyS&&l.startDate<=fyE&&leaveStatus(l)!=='cancelled'&&leaveStatus(l)!=='rejected').sort((a,b)=>a.startDate.localeCompare(b.startDate));
+    if(myLeaves.length){
+      html+=`<div class="stitle">📅 ไทม์ไลน์การลาปีงบ ${fy}</div>`;
+      html+=`<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">`;
+      for(const lv of myLeaves){
+        const t=LTYPES[lv.type];
+        html+=`<div style="display:flex;align-items:center;gap:12px;background:white;border-radius:10px;padding:10px 14px;border:1px solid var(--border)">
+          <span style="font-size:18px">${t.ico}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${t.lbl}</div>
+            <div style="font-size:12px;color:var(--text2)">${toThai(lv.startDate)}${lv.startDate!==lv.endDate?' – '+toThai(lv.endDate):''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:700">${lv.days} วัน</div>
+            ${statusBadge(leaveStatus(lv))}
+          </div>
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+
+    if(myTardy.length){
+      html+=`<div class="stitle">⏰ ประวัติมาสาย</div>`;
+      html+=`<div class="ltable"><table><thead><tr><th>วันที่</th><th>เวลา</th><th>สาย</th><th>หมายเหตุ</th></tr></thead><tbody>`;
+      html+=myTardy.sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<tr>
+        <td>${toThai(t.date)}</td><td>${t.time} น.</td>
+        <td><span style="background:#fde8c8;color:#8a5a1a;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700">${t.lateMins||0} นาที</span></td>
+        <td>${t.reason||'-'}</td>
+      </tr>`).join('');
+      html+=`</tbody></table></div>`;
+    }
+
+  } else {
+    // ADMIN: Team overview
+    const totalLeave=leaves.filter(l=>!l.isCredit&&l.startDate>=fyS&&l.startDate<=fyE&&leaveStatus(l)==='approved').reduce((a,l)=>a+l.days,0);
+    const totalTardy=tardyInFY.length;
+    const totalTardyMins=tardyInFY.reduce((a,t)=>a+(t.lateMins||0),0);
+    const pendingCount=leaves.filter(l=>!l.isCredit&&leaveStatus(l)==='pending').length;
+
+    html+=`<div class="scards" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:28px">
+      <div class="scard"><div class="clbl">👥 บุคลากร</div><div class="cval">${staffList.length}</div><div class="csub">คน ในระบบ</div></div>
+      <div class="scard annual"><div class="clbl">📋 วันลารวม</div><div class="cval">${totalLeave}</div><div class="csub">วัน ปีงบ ${fy}</div></div>
+      <div class="scard late"><div class="clbl">⏰ มาสายรวม</div><div class="cval">${totalTardy}</div><div class="csub">ครั้ง · ${totalTardyMins} นาที</div></div>
+      <div class="scard" style="border-color:${pendingCount>0?'#f0c878':'var(--border)'}"><div class="clbl">⏳ รออนุมัติ</div><div class="cval" style="color:${pendingCount>0?'#8a5a1a':'var(--text)'}">${pendingCount}</div><div class="csub">รายการ</div></div>
+    </div>`;
+
+    // Per-person summary table
+    html+=`<div class="stitle">สรุปรายบุคคล ปีงบ ${fy}</div>`;
+    html+=`<div class="ltable" style="margin-bottom:24px"><table>
+      <thead><tr>
+        <th>ชื่อ</th><th>ตำแหน่ง</th>
+        <th>🌸 พักผ่อน<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+        <th>🍃 ลากิจ<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+        <th>💙 ลาป่วย<br><small style="font-weight:400">ใช้/โควต้า</small></th>
+        <th>⏰ มาสาย</th>
+        <th>รวมลา</th>
+      </tr></thead><tbody>`;
+
+    for(const s of staffList){
+      const a=getLeaveStats(s.id,'annual',fy);
+      const p=getLeaveStats(s.id,'personal',fy);
+      const sk=getLeaveStats(s.id,'sick',fy);
+      const myT=tardyInFY.filter(t=>t.staffId===s.id);
+      const totalUsed=a.realUsed+p.realUsed+sk.realUsed;
+      const tardyMins=myT.reduce((acc,t)=>acc+(t.lateMins||0),0);
+
+      // Color code high usage
+      const annPct=a.totalQuota>0?a.realUsed/a.totalQuota:0;
+      const annColor=annPct>=0.8?'#c4544a':annPct>=0.5?'#8a5a1a':'var(--text)';
+      
+      html+=`<tr onclick="openSD('${s.id}')" style="cursor:pointer">
+        <td><b>${s.name}</b></td>
+        <td style="font-size:12px;color:var(--text2)">${s.pos}</td>
+        <td><span style="color:${annColor};font-weight:${annPct>=0.8?'700':'400'}">${a.realUsed}/${a.totalQuota}</span></td>
+        <td>${p.realUsed}/${p.totalQuota}</td>
+        <td>${sk.realUsed}/${sk.totalQuota}</td>
+        <td>${myT.length>0?`<span style="background:#fde8c8;color:#8a5a1a;padding:1px 7px;border-radius:10px;font-size:12px;font-weight:600">${myT.length}ครั้ง/${tardyMins}นาที</span>`:'-'}</td>
+        <td><b>${totalUsed}</b></td>
+      </tr>`;
+    }
+    html+=`</tbody></table></div>`;
+
+    // Tardy ranking
+    if(tardyInFY.length>0){
+      const tCnt={};
+      tardyInFY.forEach(t=>{tCnt[t.staffId]=(tCnt[t.staffId]||{cnt:0,mins:0});tCnt[t.staffId].cnt++;tCnt[t.staffId].mins+=(t.lateMins||0);});
+      const ranked=Object.entries(tCnt).sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,5);
+      html+=`<div class="stitle">🏆 อันดับมาสายบ่อยสุด (ปีงบ ${fy})</div>`;
+      html+=`<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">`;
+      ranked.forEach(([sid,data],i)=>{
+        const st=staffList.find(s=>s.id===sid);
+        const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+        html+=`<div style="display:flex;align-items:center;gap:12px;background:white;border-radius:10px;padding:10px 14px;border:1px solid var(--border)">
+          <span style="font-size:20px">${medals[i]}</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">${st?st.name:'-'}</div><div style="font-size:11px;color:var(--text3)">${st?st.pos:''}</div></div>
+          <div style="text-align:right">
+            <span style="background:#fde8c8;color:#8a5a1a;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700">${data.cnt} ครั้ง · ${data.mins} นาที</span>
+          </div>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+  }
+
+  document.getElementById('dashContent').innerHTML=html;
+}
+
+// ===== CUSTOM HOLIDAY MANAGEMENT =====
+let customHols = JSON.parse(localStorage.getItem('lc_hols')||'[]');
+
+function saveHols(){ localStorage.setItem('lc_hols', JSON.stringify(customHols)); }
+
+// Override getHol to include custom holidays
+function getHol(ds){
+  return HOLS.find(h=>h.d===ds) || customHols.find(h=>h.d===ds);
+}
+
+function openAddHolModal(){
+  document.getElementById('holDate').value='';
+  document.getElementById('holName').value='';
+  document.getElementById('holType').value='official';
+  document.getElementById('addHolModal').classList.add('open');
+}
+
+function saveHol(){
+  const d=document.getElementById('holDate').value;
+  const n=document.getElementById('holName').value.trim();
+  const type=document.getElementById('holType').value;
+  if(!d||!n){toast('กรุณาระบุวันที่และชื่อ');return}
+  if(customHols.find(h=>h.d===d)){toast('วันนี้มีอยู่แล้ว');return}
+  customHols.push({d,n,type,custom:true});
+  customHols.sort((a,b)=>a.d.localeCompare(b.d));
+  saveHols();closeM('addHolModal');renderHolMgmt();renderCal();toast('✅ เพิ่มวันหยุดแล้ว');
+}
+
+function delCustomHol(d){
+  if(!confirm('ลบวันหยุดนี้?'))return;
+  customHols=customHols.filter(h=>h.d!==d);
+  saveHols();renderHolMgmt();renderCal();toast('ลบแล้ว');
+}
+
+function renderHolMgmt(){
+  const allHols=[...HOLS.map(h=>({...h,custom:false})),...customHols].sort((a,b)=>a.d.localeCompare(b.d));
+  const tbl=document.getElementById('holMgmtTable');if(!tbl)return;
+  tbl.innerHTML=allHols.map(h=>{
+    const d=new Date(h.d);
+    const typeTag=h.custom
+      ?`<span style="background:#e8f0fe;color:#1a4a8a;padding:2px 8px;border-radius:10px;font-size:11px">กำหนดเอง</span>`
+      :`<span style="background:var(--annual);color:#c4544a;padding:2px 8px;border-radius:10px;font-size:11px">ราชการ</span>`;
+    const delBtn=h.custom?`<button class="btnDel" onclick="delCustomHol('${h.d}')">ลบ</button>`:'<span style="color:var(--text3);font-size:11px">ลบไม่ได้</span>';
+    return`<tr>
+      <td>${toThai(h.d)}</td>
+      <td><b>${h.n}</b></td>
+      <td>${typeTag}</td>
+      <td>${delBtn}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ===== USER MANAGEMENT =====
@@ -1823,14 +2115,140 @@ function closeM(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.moverlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 
-// BUG FIX: Updated Export Template to reflect 45 days
+// Template Excel download
 function dlTemplate(){
   const rows=[['ชื่อ-สกุล','ตำแหน่ง','โควต้าลาพักผ่อน','โควต้าลากิจ','โควต้าลาป่วย','สะสมลาพักผ่อน','สะสมลากิจ','สะสมลาป่วย'],
-    ['นายตัวอย่าง ใจดี','นักวิชาการ',10,45,30,'ได้','ไม่ได้','ไม่ได้']];
+    ['นายตัวอย่าง ใจดี','นักวิชาการ',10,3,30,'ได้','ไม่ได้','ไม่ได้']];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Template');
   XLSX.writeFile(wb,'template_staff.xlsx');
 }
+
+// ===== HELP / USER GUIDE =====
+function renderHelp(){
+  const isAdmin = CRole === 'admin';
+  const sections = [
+    {
+      icon:'🔐', title:'การเข้าสู่ระบบ', color:'#fcd5ce',
+      items:[
+        {q:'Username และรหัสผ่านของฉันคืออะไร?', a:'Admin จะแจ้ง Username (ภาษาอังกฤษ) และรหัสผ่านให้แยกต่างหาก รหัสเริ่มต้นของเจ้าหน้าที่ทั่วไปคือ 1234'},
+        {q:'ลืมรหัสผ่านทำอย่างไร?', a:'ติดต่อ Admin เพื่อขอรีเซ็ตรหัสผ่าน Admin สามารถเปลี่ยนรหัสให้ได้ที่เมนู 🔑 บัญชีผู้ใช้'},
+        {q:'ออกจากระบบได้อย่างไร?', a:'กดปุ่มชื่อผู้ใช้มุมขวาบน แล้วกดไอคอน ↩'},
+      ]
+    },
+    {
+      icon:'📆', title:'ปฏิทินวันลา', color:'#d5e8d8',
+      items:[
+        {q:'ปฏิทินแสดงข้อมูลอะไรบ้าง?', a:'แสดงวันหยุดราชการ 🎌, วันลาของตัวเอง (Staff) หรือทุกคน (Admin), จำนวนคนที่ลาในแต่ละวัน'},
+        {q:'กดที่วันในปฏิทินแล้วได้อะไร?', a:'เปิดหน้าต่างบันทึกวันลา โดยตั้งค่าวันที่ให้อัตโนมัติตามวันที่กด'},
+        {q:'กรองประเภทการลาได้ไหม?', a:'ได้ กดปุ่มกรอง 🌸 ลาพักผ่อน / 🍃 ลากิจ / 💙 ลาป่วย / ⏰ มาสาย ด้านบนปฏิทิน'},
+        {q:'สัญลักษณ์ "N คนลา" บนปฏิทินคืออะไร?', a:'แสดงเฉพาะ Admin — บอกว่าวันนั้นมีบุคลากรลาทั้งหมดกี่คน'},
+      ]
+    },
+    {
+      icon:'📋', title:'วันลาของฉัน', color:'#d5d8f0',
+      items:[
+        {q:'ประเภทการลามีอะไรบ้าง?', a:'🌸 ลาพักผ่อน (สะสมได้สำหรับเภสัชกร) / 🍃 ลากิจ / 💙 ลาป่วย โควต้าต่อปีงบ: ลาพักผ่อน 10 วัน, ลากิจ 3 วัน, ลาป่วย 30 วัน'},
+        {q:'วันลาคำนวณอย่างไร?', a:'นับเฉพาะวันทำการราชการ ตัดวันเสาร์-อาทิตย์และวันหยุดราชการออกอัตโนมัติ'},
+        {q:'ปีงบคืออะไร?', a:'ปีงบประมาณ เริ่ม 1 ตุลาคม – 30 กันยายน ของปีถัดไป เช่น ปีงบ 2568 = ต.ค.67 – ก.ย.68'},
+        {q:'วันลาพักผ่อน reset เมื่อไหร่?', a:'เพิ่มใหม่ 10 วันทุกต้นปีงบ (1 ตุลา) อัตโนมัติ ถ้าสะสมได้จะยกยอดวันที่เหลือมาด้วย'},
+        {q:'ลากิจและลาป่วย reset เมื่อไหร่?', a:'Reset เป็น 0 ทุกต้นปีงบ ไม่สะสมข้ามปี'},
+        {q:'ลบรายการลาได้ไหม?', a:'ได้ กดปุ่ม "ลบ" ในตารางประวัติการลา'},
+      ]
+    },
+    {
+      icon:'📐', title:'วางแผนวันลา 15 วันทำการ', color:'#fde8c8',
+      items:[
+        {q:'ฟีเจอร์นี้ทำอะไร?', a:'คำนวณว่าถ้าลา N วัน จะเหลือวันทำการในปีงบนี้เท่าไหร่ และแนะนำช่วงวันที่เหมาะสม โดยไม่ให้เหลือน้อยกว่า 15 วัน'},
+        {q:'เปิดใช้ได้อย่างไร?', a:'ไปที่แท็บ "วันลาของฉัน" แล้วกดปุ่ม 📐 วางแผนวันลา 15 วัน'},
+        {q:'ถ้าระบบแจ้งเตือนว่าจะเหลือน้อยกว่า 15 วัน?', a:'จะมี popup เตือนทุกครั้งที่บันทึกวันลา ยังสามารถกด "ตกลง" เพื่อบันทึกต่อได้ถ้าจำเป็น'},
+        {q:'ช่วงวันที่แนะนำแสดงอะไร?', a:'แสดงสูงสุด 5 ช่วงที่ไม่ชนกับวันลาที่มีอยู่แล้ว และยังคงเหลือวันทำการ ≥ 15 วัน กดบันทึกได้เลย'},
+      ]
+    },
+    {
+      icon:'⏰', title:'สถิติมาสาย', color:'#fcd5ce',
+      items:[
+        {q:'ใครบันทึกมาสายได้?', a:'เฉพาะ Admin เท่านั้นที่บันทึกสถิติมาสายได้ เจ้าหน้าที่ดูสถิติตัวเองได้แต่แก้ไขไม่ได้'},
+        {q:'มาสายคิดจากกี่โมง?', a:'นับจาก 08:30 น. ระบบคำนวณจำนวนนาทีที่สายให้อัตโนมัติ'},
+        {q:'ดูสถิติมาสายได้ที่ไหน?', a:'แท็บ ⏰ มาสาย แสดงจำนวนครั้ง / รวมนาทีสะสม / ใครสายบ่อยสุด'},
+      ]
+    },
+    {
+      icon:'🎌', title:'วันหยุดราชการ', color:'#d5e8d8',
+      items:[
+        {q:'วันหยุดราชการมีรองรับปีไหนบ้าง?', a:'ปีงบ 2568 (ปี ค.ศ. 2025) และ 2569 (ปี ค.ศ. 2026) เลือกดูได้จาก dropdown'},
+        {q:'วันหยุดราชการถูกตัดออกจากการนับวันลาไหม?', a:'ใช่ ระบบตัดวันหยุดราชการออกจากการคำนวณวันทำการอัตโนมัติ'},
+      ]
+    },
+  ];
+
+  const adminSections = [
+    {
+      icon:'👥', title:'จัดการบุคลากร (Admin)', color:'#d5d8f0',
+      items:[
+        {q:'เพิ่มบุคลากรได้อย่างไร?', a:'แท็บ 👥 บุคลากร → กด "+ เพิ่มบุคลากร" กรอกชื่อ ตำแหน่ง โควต้า และตั้งค่าสะสมวันลา'},
+        {q:'นำเข้าหลายคนพร้อมกันได้ไหม?', a:'ได้ กด "📥 นำเข้า Excel" ไฟล์ต้องมีคอลัมน์: ชื่อ-สกุล, ตำแหน่ง, โควต้าลาพักผ่อน, โควต้าลากิจ, โควต้าลาป่วย, สะสมลาพักผ่อน (ได้/ไม่ได้)'},
+        {q:'แก้ไขโควต้าวันลาได้ไหม?', a:'ได้ กดการ์ดบุคลากร → กดปุ่ม 📊 แก้ไขวันลา สามารถเปลี่ยนโควต้าและปรับยอดวันลาที่ใช้ไปได้'},
+        {q:'ลบบุคลากรออกจากระบบได้ไหม?', a:'ได้ กดการ์ดบุคลากร → กด 🗑️ ลบบุคลากร ข้อมูลการลาของบุคคลนั้นจะถูกลบออกด้วย'},
+      ]
+    },
+    {
+      icon:'🔑', title:'จัดการบัญชีผู้ใช้ (Admin)', color:'#fde8c8',
+      items:[
+        {q:'เพิ่ม/แก้ไข/ลบบัญชีผู้ใช้ได้ที่ไหน?', a:'แท็บ 🔑 บัญชีผู้ใช้ สามารถดู username/password, เปลี่ยนรหัสผ่าน (กดปุ่ม 🔑), แก้ไข หรือลบบัญชีได้'},
+        {q:'บัญชี admin หลักลบได้ไหม?', a:'ไม่ได้ บัญชี username "admin" จะถูกป้องกันไม่ให้ลบ'},
+        {q:'Staff เข้าระบบแล้วเห็นข้อมูลอะไรบ้าง?', a:'เห็นเฉพาะปฏิทิน, วันลาของตัวเอง, สถิติมาสายของตัวเอง และวันหยุดราชการ ไม่เห็นข้อมูลของคนอื่น'},
+      ]
+    },
+    {
+      icon:'📊', title:'รายงาน (Admin)', color:'#d5e8d8',
+      items:[
+        {q:'รายงานแสดงอะไรบ้าง?', a:'สรุปวันลาทุกประเภทของทุกคน หรือรายบุคคล กรองตามปีงบได้'},
+        {q:'ส่งออก Excel ได้ไหม?', a:'ได้ กดปุ่ม 📤 ส่งออก Excel จะได้ไฟล์ที่มีทั้ง sheet สรุปการลา และ sheet สถิติมาสาย'},
+        {q:'ดูประวัติปีงบเก่าได้ไหม?', a:'ได้ เลือกปีงบจาก dropdown ในหน้ารายงาน ข้อมูลย้อนหลังทุกปีงบจะยังอยู่'},
+      ]
+    },
+  ];
+
+  const allSections = isAdmin ? [...sections, ...adminSections] : sections;
+
+  let html = `
+    <div style="max-width:800px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-size:48px;margin-bottom:12px">📚</div>
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:8px">คู่มือการใช้งาน</h1>
+        <p style="color:var(--text2);font-size:13px">ระบบบันทึกวันลา — กลุ่มงานเภสัชกรรม</p>
+        ${isAdmin ? '<div style="display:inline-block;background:var(--annual);color:#c4544a;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-top:6px">👑 Admin Mode</div>' : ''}
+      </div>`;
+
+  for(const sec of allSections){
+    html += `
+      <div style="background:white;border-radius:16px;border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:20px;overflow:hidden">
+        <div style="background:${sec.color};padding:16px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">${sec.icon}</span>
+          <span style="font-size:15px;font-weight:700;color:var(--text)">${sec.title}</span>
+        </div>
+        <div style="padding:8px 0">`;
+    for(const [i, item] of sec.items.entries()){
+      html += `
+          <div style="padding:14px 20px;${i<sec.items.length-1?'border-bottom:1px solid var(--border)':''}">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px">❓ ${item.q}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">✅ ${item.a}</div>
+          </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  html += `
+      <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">
+        ระบบบันทึกวันลา v2.1 · กลุ่มงานเภสัชกรรม<br>
+        หากพบปัญหา ติดต่อ Admin ได้เลยครับ
+      </div>
+    </div>`;
+
+  document.getElementById('helpContent').innerHTML = html;
+}
+
 </script>
 </body>
 </html>
